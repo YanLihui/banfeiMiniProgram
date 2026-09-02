@@ -1,0 +1,48 @@
+/* pages/privacy/privacy.wxss */
+.container {
+  height: 100vh;
+  background: #F5F7FA;
+}
+.header {
+  background: white;
+  padding: 40rpx 32rpx 32rpx;
+  margin-bottom: 16rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+.title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1C1C1C;
+  display: block;
+  margin-bottom: 8rpx;
+}
+.update-date {
+  font-size: 24rpx;
+  color: #ADADAD;
+  display: block;
+}
+.section {
+  background: white;
+  margin: 0 0 16rpx;
+  padding: 32rpx;
+}
+.section-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1C1C1C;
+  display: block;
+  margin-bottom: 16rpx;
+}
+.content {
+  font-size: 26rpx;
+  color: #595959;
+  line-height: 1.8;
+  display: block;
+}
+.list { display: flex; flex-direction: column; gap: 10rpx; }
+.item {
+  font-size: 26rpx;
+  color: #595959;
+  line-height: 1.8;
+  display: block;
+}

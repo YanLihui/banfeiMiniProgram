@@ -1,0 +1,19 @@
+# 微信开发者工具
+.DS_Store
+node_modules/
+miniprogram_npm/
+
+# 敏感信息
+cookie.txt
+*.key
+*.pem
+
+# 云函数依赖（各自 npm install 即可）
+cloudfunctions/*/node_modules/
+
+# 本地导出数据
+*.csv
+categories_*.json
+
+# 本地文档
+*.pdf

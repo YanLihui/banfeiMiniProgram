@@ -1,0 +1,329 @@
+<!-- pages/profile/profile.wxml -->
+<view class="container">
+
+  <!-- ══ 个人信息卡 ════════════════════════ -->
+  <view class="profile-hero">
+    <view class="avatar">
+      <image wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" class="avatar-img" mode="aspectFill" />
+      <text wx:else class="avatar-placeholder">{{nameInitial}}</text>
+    </view>
+    <view class="profile-info">
+      <text class="profile-name">{{userInfo.name || '未设置昵称'}}</text>
+      <text class="profile-child">孩子：{{userInfo.childName || '未填写'}} · {{className}}</text>
+      <text class="profile-term">{{yearTerm}} 学年</text>
+      <view class="role-badge {{isAdmin ? 'admin' : 'parent'}}">
+        <text>{{isAdmin ? '⭐ 家委会成员' : '🤝 成长合伙人'}}</text>
+      </view>
+    </view>
+    <view class="edit-btn" bindtap="editProfile">编辑</view>
+  </view>
+
+  <!-- ══ 数据统计 ════════════════════════ -->
+  <view class="stats-row">
+    <view class="stat-item">
+      <text class="stat-num green">{{collectedCount}}</text>
+      <text class="stat-label">已缴费人数</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num">{{expenseCount}}</text>
+      <text class="stat-label">支出记录</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num red">{{pendingCount}}</text>
+      <text class="stat-label">待缴费</text>
+    </view>
+  </view>
+
+  <!-- ══ 家委会功能（仅管理员可见） ════════ -->
+  <view wx:if="{{isAdmin}}" class="section-title-bar">管理功能</view>
+  <view wx:if="{{isAdmin}}" class="menu-group">
+    <!-- 出纳专属（收费/入账） -->
+    <view wx:if="{{isCashier}}" class="menu-item" bindtap="goToCollect">
+      <view class="mi-icon green">💰</view>
+      <text class="mi-text">收费管理</text>
+      <view wx:if="{{pendingCount > 0}}" class="mi-badge">{{pendingCount}} 待收</view>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view wx:if="{{isCashier || isChair}}" class="menu-item" bindtap="openOpeningBalanceModal">
+      <view class="mi-icon green">🏦</view>
+      <text class="mi-text">设置期初结余</text>
+      <text class="mi-sub">录入上期结转余额</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view wx:if="{{isCashier || isChair}}" class="menu-item" bindtap="goToConfirm">
+      <view class="mi-icon orange">✅</view>
+      <text class="mi-text">确认缴费</text>
+      <view wx:if="{{pendingClaimsCount > 0}}" class="mi-badge orange">{{pendingClaimsCount}} 待确认</view>
+      <text class="mi-arrow">›</text>
+    </view>
+    <!-- 全员委员：添加支出 / 成员管理 -->
+    <view wx:if="{{isAdmin}}" class="menu-item" bindtap="goToAdd">
+      <view class="mi-icon orange">📋</view>
+      <text class="mi-text">添加支出</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goToMembers">
+      <view class="mi-icon blue">👥</view>
+      <text class="mi-text">成员管理</text>
+      <text class="mi-sub">{{totalStudents}} 名合伙人</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view wx:if="{{isChair || isCashier}}" class="menu-item" bindtap="goToRoles">
+      <view class="mi-icon orange">🎖️</view>
+      <text class="mi-text">角色管理</text>
+      <text class="mi-sub">设置委员角色</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="exportReport">
+      <view class="mi-icon purple">📊</view>
+      <text class="mi-text">导出报表</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <!-- 主任/出纳/会计：账目报告 / 新学期 -->
+    <view wx:if="{{isFinance || isChair}}" class="menu-item" bindtap="openReport">
+      <view class="mi-icon teal">📋</view>
+      <text class="mi-text">本期账目报告</text>
+      <text class="mi-sub">{{yearTerm}}</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view wx:if="{{isFinance || isChair}}" class="menu-item" bindtap="openNewTermModal">
+      <view class="mi-icon orange">🔄</view>
+      <text class="mi-text">开启新学期收费</text>
+      <text class="mi-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ══ 通用设置 ════════════════════════ -->
+  <view class="section-title-bar">设置</view>
+  <view class="menu-group">
+    <view class="menu-item" bindtap="goToNotice">
+      <view class="mi-icon green">🔔</view>
+      <text class="mi-text">消息通知</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goToAbout">
+      <view class="mi-icon gray">ℹ️</view>
+      <text class="mi-text">关于账本</text>
+      <text class="mi-sub">v1.0.0</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goToPrivacy">
+      <view class="mi-icon gray">🔒</view>
+      <text class="mi-text">隐私政策</text>
+      <text class="mi-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="logout">
+      <view class="mi-icon red">🚪</view>
+      <text class="mi-text" style="color: #FF4D4F">退出登录</text>
+      <text class="mi-arrow">›</text>
+    </view>
+  </view>
+
+  <view style="text-align:center;padding:32rpx 0;font-size:22rpx;color:#D9D9D9">
+    {{className}} · 班费账本 · 透明公开
+  </view>
+  <view class="safe-bottom"></view>
+
+  <!-- ══ 编辑姓名弹窗 ══════════════════════════ -->  <view wx:if="{{showEditModal}}" class="modal-mask" bindtap="hideEditModal">
+    <view class="modal-card" catchtap="noop">
+      <text class="modal-title">完善信息</text>
+      <view class="modal-field">
+        <text class="modal-label">家长姓名</text>
+        <input
+          class="modal-input"
+          placeholder="请输入您的姓名"
+          value="{{editName}}"
+          bindinput="onEditInput"
+          data-field="editName"
+        />
+      </view>
+      <view class="modal-field">
+        <text class="modal-label">孩子姓名 *</text>
+        <!-- 花名册有数据时用 picker -->
+        <picker wx:if="{{rosterOptions.length > 0}}" range="{{rosterOptions}}" value="{{rosterPickerIdx}}" bindchange="onRosterPickerChange">
+          <view class="picker-field-row">
+            <view class="picker-text-wrap">
+              <text class="{{editChildName ? 'picker-val' : 'picker-ph'}}">{{editChildName || '请选择孩子'}}</text>
+            </view>
+            <text class="picker-arrow">›</text>
+          </view>
+        </picker>
+        <!-- 花名册为空时手动输入 -->
+        <input
+          wx:else
+          class="modal-input"
+          placeholder="请输入孩子姓名（必填）"
+          value="{{editChildName}}"
+          bindinput="onEditInput"
+          data-field="editChildName"
+        />
+      </view>
+
+      <!-- 家委主任专属：班级设置 -->
+      <view wx:if="{{isChair}}" class="modal-section-title">班级设置</view>
+      <view wx:if="{{isChair}}" class="modal-field">
+        <text class="modal-label">班级名称</text>
+        <input
+          class="modal-input"
+          placeholder="如：三年级二班"
+          value="{{editClassName}}"
+          bindinput="onEditInput"
+          data-field="editClassName"
+        />
+      </view>
+      <view wx:if="{{isChair}}" class="modal-field">
+        <text class="modal-label">学年</text>
+        <input
+          class="modal-input"
+          placeholder="如：2024-2025"
+          value="{{editYearTerm}}"
+          bindinput="onEditInput"
+          data-field="editYearTerm"
+        />
+      </view>
+
+      <view class="modal-btns">
+        <view class="modal-btn cancel" bindtap="hideEditModal">取消</view>
+        <view class="modal-btn confirm {{savingProfile ? 'disabled' : ''}}" bindtap="saveProfile">
+          {{savingProfile ? '保存中...' : '保存'}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ══ 新学期弹窗 ════════════════════════════ -->
+  <view wx:if="{{showNewTermModal}}" class="modal-mask" bindtap="closeNewTermModal">
+    <view class="modal-card" catchtap="noop">
+      <text class="modal-title">开启新学期收费</text>
+      <text class="modal-desc">切换学年后，所有家长缴费状态将重置为未缴费（历史记录保留）</text>
+      <view class="modal-field">
+        <text class="modal-label">新学年</text>
+        <input
+          class="modal-input"
+          placeholder="如：2025-2026"
+          value="{{newTermInput}}"
+          bindinput="onNewTermInput"
+          data-field="newTermInput"
+        />
+      </view>
+      <view class="modal-field">
+        <text class="modal-label">每人班费（元）</text>
+        <input
+          class="modal-input"
+          type="digit"
+          placeholder="如：200"
+          value="{{newFeeInput}}"
+          bindinput="onNewTermInput"
+          data-field="newFeeInput"
+        />
+      </view>
+      <view class="modal-btns">
+        <view class="modal-btn cancel" bindtap="closeNewTermModal">取消</view>
+        <view class="modal-btn confirm {{startingNewTerm ? 'disabled' : ''}}" bindtap="confirmNewTerm">
+          {{startingNewTerm ? '处理中...' : '确认开启'}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ══ 账目报告弹窗 ════════════════════════════ -->
+  <view wx:if="{{showReportModal}}" class="modal-mask" bindtap="closeReport">
+    <view class="modal-card report-card" catchtap="noop">
+      <text class="modal-title">📋 账目报告</text>
+
+      <!-- 学年切换 -->
+      <scroll-view scroll-x class="report-year-scroll" wx:if="{{availableYearTerms.length > 1}}">
+        <view class="report-year-tabs">
+          <view
+            wx:for="{{availableYearTerms}}"
+            wx:key="*this"
+            class="report-year-tab {{item === reportYearTerm ? 'active' : ''}}"
+            bindtap="switchReportYear"
+            data-yt="{{item}}"
+          >{{item}}</view>
+        </view>
+      </scroll-view>
+      <text class="modal-desc">{{reportYearTerm}} 学年</text>
+
+      <view wx:if="{{reportLoading}}" class="report-loading">
+        <text>加载中...</text>
+      </view>
+
+      <block wx:if="{{!reportLoading && report}}">
+        <view class="report-row">
+          <text class="report-label">应收总额</text>
+          <text class="report-value">¥{{report.expectedStr}}</text>
+        </view>
+        <view class="report-row">
+          <text class="report-label">已收人数</text>
+          <text class="report-value green">{{report.collectedCount}} / {{report.totalStudents}} 人</text>
+        </view>
+        <view class="report-row">
+          <text class="report-label">实收金额</text>
+          <text class="report-value green">¥{{report.totalIncomeStr}}</text>
+        </view>
+        <view class="report-row">
+          <text class="report-label">未收人数</text>
+          <text class="report-value red">{{report.uncollectedCount}} 人（¥{{report.uncollectedStr}}）</text>
+        </view>
+        <view class="report-divider"></view>
+        <view class="report-row">
+          <text class="report-label">总支出</text>
+          <text class="report-value red">¥{{report.totalExpenseStr}}</text>
+        </view>
+        <view class="report-divider"></view>
+        <view class="report-row report-balance">
+          <text class="report-label">当前结余</text>
+          <text class="report-value {{report.balanceNeg ? 'red' : 'green'}}">
+            {{report.balanceNeg ? '−' : '+'}}¥{{report.balanceStr}}
+          </text>
+        </view>
+      </block>
+
+      <view class="modal-btns" style="margin-top:32rpx">
+        <view class="modal-btn confirm" bindtap="closeReport">关闭</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ══ 期初结余弹窗 ══════════════════════════ -->
+  <view wx:if="{{showOpeningBalanceModal}}" class="modal-mask" bindtap="closeOpeningBalanceModal">
+    <view class="modal-card" catchtap="noop">
+      <text class="modal-title">设置期初结余</text>
+      <text style="font-size:24rpx;color:#8C8C8C;display:block;margin-bottom:28rpx;line-height:1.6">
+        录入上学期结转到本学年的班费余额，将作为一条「期初结余」收入记录显示在账本中。
+      </text>
+      <view class="modal-field">
+        <text class="modal-label">结余金额（元） *</text>
+        <input
+          class="modal-input"
+          type="digit"
+          placeholder="如：1234.56"
+          value="{{openingAmount}}"
+          bindinput="onOpeningInput"
+          data-field="openingAmount"
+          focus="{{true}}"
+        />
+      </view>
+      <view class="modal-field">
+        <text class="modal-label">备注（可选）</text>
+        <input
+          class="modal-input"
+          placeholder="如：三年级下学期结余"
+          value="{{openingNotes}}"
+          bindinput="onOpeningInput"
+          data-field="openingNotes"
+        />
+      </view>
+      <view class="modal-btns">
+        <view class="modal-btn cancel" bindtap="closeOpeningBalanceModal">取消</view>
+        <view class="modal-btn confirm {{savingOpeningBalance ? 'disabled' : ''}}" bindtap="saveOpeningBalance">
+          {{savingOpeningBalance ? '保存中...' : '确认录入'}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view>

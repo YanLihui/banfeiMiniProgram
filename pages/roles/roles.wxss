@@ -1,0 +1,93 @@
+/* pages/roles/roles.wxss */
+.container { background: #F5F7FA; min-height: 100vh; }
+
+.loading-wrap {
+  display: flex; justify-content: center; align-items: center;
+  padding: 120rpx 0;
+}
+.loading-tip { font-size: 28rpx; color: #ADADAD; }
+
+.tip-bar {
+  background: #F0FAF4; border-bottom: 1rpx solid #D9F2E3;
+  padding: 20rpx 32rpx;
+}
+.tip-text { font-size: 24rpx; color: #52C41A; line-height: 1.6; }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 120rpx 0; gap: 16rpx;
+}
+.empty-icon { font-size: 80rpx; }
+.empty-text { font-size: 28rpx; color: #ADADAD; }
+
+/* 列表 */
+.member-list {
+  background: white; margin: 24rpx 24rpx 0;
+  border-radius: 24rpx; overflow: hidden;
+}
+.member-item {
+  display: flex; align-items: center; gap: 24rpx;
+  padding: 28rpx 32rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+.member-item:last-child { border-bottom: none; }
+
+.avatar {
+  width: 88rpx; height: 88rpx; border-radius: 50%;
+  background: #E6F7FF; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0;
+}
+.avatar-text { font-size: 38rpx; font-weight: 800; color: #1677FF; }
+
+.member-info { flex: 1; }
+.member-name-row {
+  display: flex; align-items: center; gap: 16rpx; margin-bottom: 8rpx;
+}
+.member-name { font-size: 30rpx; font-weight: 700; color: #1C1C1C; }
+.member-child { font-size: 24rpx; color: #8C8C8C; }
+
+/* 角色标签 */
+.role-tag {
+  padding: 4rpx 16rpx; border-radius: 40rpx; font-size: 22rpx; font-weight: 600;
+}
+.role-tag.committee { background: #FFF7E6; color: #FA8C16; }
+.role-tag.parent    { background: #F0F0F0; color: #8C8C8C; }
+.role-tag.art       { background: #FFF0F6; color: #EB2F96; }
+.role-tag.planning  { background: #E6FFFB; color: #08979C; }
+
+.arrow { font-size: 36rpx; color: #C0C0C0; }
+
+/* ── 自定义角色选择面板 ─────────────────────── */
+.picker-mask {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 100;
+}
+.picker-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: white;
+  border-radius: 32rpx 32rpx 0 0;
+  z-index: 101;
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.picker-sheet.visible { transform: translateY(0); }
+.picker-title {
+  text-align: center; font-size: 26rpx; color: #ADADAD;
+  padding: 28rpx 32rpx 16rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+.picker-option {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 32rpx 48rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+.picker-option.current { background: #F6FFED; }
+.picker-option-label { font-size: 32rpx; color: #1C1C1C; }
+.picker-option.current .picker-option-label { color: #07C160; font-weight: 700; }
+.picker-check { font-size: 32rpx; color: #07C160; font-weight: 700; }
+.picker-cancel {
+  text-align: center; font-size: 32rpx; color: #8C8C8C;
+  padding: 32rpx;
+}

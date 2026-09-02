@@ -1,0 +1,140 @@
+<!-- pages/setup/setup.wxml -->
+<view class="container">
+
+  <!-- 步骤指示器 -->
+  <view class="steps-bar">
+    <view class="step-item {{step >= 1 ? 'active' : ''}}">
+      <view class="step-circle">1</view>
+      <text class="step-label">班级信息</text>
+    </view>
+    <view class="step-line {{step >= 2 ? 'active' : ''}}"></view>
+    <view class="step-item {{step >= 2 ? 'active' : ''}}">
+      <view class="step-circle">2</view>
+      <text class="step-label">花名册</text>
+    </view>
+  </view>
+
+  <!-- ══ Step 1：班级基本信息 ════════════════════ -->
+  <block wx:if="{{step === 1}}">
+    <view class="hero-tip">
+      <text class="hero-emoji">🏫</text>
+      <text class="hero-title">初始化班级</text>
+      <text class="hero-sub">设置班级基本信息，后续可在「我的」中修改</text>
+    </view>
+
+    <view class="form-card">
+
+      <view class="field">
+        <text class="field-label">班级名称 <text class="required-star">*</text></text>
+        <input
+          class="field-input"
+          placeholder="如：三年级三班"
+          value="{{className}}"
+          bindinput="onInput"
+          data-field="className"
+        />
+      </view>
+
+      <view class="field">
+        <text class="field-label">学年 <text class="required-star">*</text></text>
+        <input
+          class="field-input"
+          placeholder="如：2024-2025"
+          value="{{yearTerm}}"
+          bindinput="onInput"
+          data-field="yearTerm"
+        />
+      </view>
+
+      <view class="field">
+        <text class="field-label">班级人数 <text class="required-star">*</text></text>
+        <input
+          class="field-input"
+          type="number"
+          placeholder="如：34"
+          value="{{totalStudents}}"
+          bindinput="onInput"
+          data-field="totalStudents"
+        />
+      </view>
+
+      <view class="field">
+        <text class="field-label">每人班费（元） <text class="required-star">*</text></text>
+        <input
+          class="field-input"
+          type="digit"
+          placeholder="如：200"
+          value="{{feePerStudent}}"
+          bindinput="onInput"
+          data-field="feePerStudent"
+        />
+      </view>
+
+      <button
+        class="primary-btn {{saving ? 'disabled' : ''}}"
+        bindtap="saveClassInfo"
+        loading="{{saving}}"
+      >
+        {{saving ? '保存中...' : '下一步：导入花名册 →'}}
+      </button>
+    </view>
+  </block>
+
+  <!-- ══ Step 2：花名册导入 ══════════════════════ -->
+  <block wx:if="{{step === 2}}">
+    <view class="hero-tip">
+      <text class="hero-emoji">📋</text>
+      <text class="hero-title">导入花名册</text>
+      <text class="hero-sub">每行一名学生，支持「学号 姓名」或直接输入姓名</text>
+    </view>
+
+    <view class="form-card" style="margin-bottom: {{keyboardHeight}}px;">
+      <view class="format-hint">
+        <text class="format-title">格式示例</text>
+        <text class="format-line">01 张三</text>
+        <text class="format-line">02 李四</text>
+        <text class="format-line">王五（无学号）</text>
+      </view>
+
+      <view class="field">
+        <text class="field-label">粘贴或输入名单</text>
+        <textarea
+          class="import-textarea"
+          placeholder="每行一名学生..."
+          value="{{importText}}"
+          bindinput="onImportInput"
+          auto-height
+          adjust-position="{{true}}"
+        />
+      </view>
+
+      <!-- 预览 -->
+      <view wx:if="{{importCount > 0}}" class="preview-box">
+        <text class="preview-title">已识别 {{importCount}} 名成员</text>
+        <view class="preview-list">
+          <view wx:for="{{importPreview}}" wx:key="name" class="preview-item">
+            <text class="preview-no">{{item.studentNo || '--'}}</text>
+            <text class="preview-name">{{item.name}}</text>
+          </view>
+          <view wx:if="{{importCount > 5}}" class="preview-more">
+            <text>... 还有 {{importCount - 5}} 人</text>
+          </view>
+        </view>
+      </view>
+
+      <button
+        class="primary-btn {{importing ? 'disabled' : ''}}"
+        bindtap="doImport"
+        loading="{{importing}}"
+      >
+        {{importing ? '导入中...' : '导入 ' + importCount + ' 名成员'}}
+      </button>
+
+      <view class="skip-btn" bindtap="skipImport">
+        <text>暂时跳过，稍后在成员管理中导入 →</text>
+      </view>
+    </view>
+  </block>
+
+  <view class="safe-bottom"></view>
+</view>

@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班费管理小程序 — 架构与交互流程图</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --green: #07C160;
+    --green-light: #E7F9EF;
+    --green-dark: #059a4c;
+    --blue: #1677FF;
+    --blue-light: #E6F4FF;
+    --orange: #FA8C16;
+    --orange-light: #FFF7E6;
+    --red: #FF4D4F;
+    --red-light: #FFF1F0;
+    --purple: #722ED1;
+    --purple-light: #F9F0FF;
+    --gray: #8C8C8C;
+    --gray-light: #F5F5F5;
+    --bg: #0A0F1E;
+    --bg2: #111827;
+    --bg3: #1A2235;
+    --card: #1E2B3C;
+    --border: rgba(255,255,255,0.08);
+    --text: #E8EDF5;
+    --text2: #8A9BB5;
+    --font: 'Noto Sans SC', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #0A1628 0%, #0D2137 50%, #071A2E 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 48px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(7,193,96,0.15) 0%, transparent 70%);
+  }
+  .header-title {
+    font-size: 26px; font-weight: 900; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #07C160, #52E088);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .header-sub { font-size: 13px; color: var(--text2); font-family: var(--mono); }
+
+  /* ── Nav Tabs ── */
+  .nav {
+    display: flex; gap: 4px;
+    padding: 16px 48px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    overflow-x: auto;
+  }
+  .nav-tab {
+    padding: 8px 20px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    white-space: nowrap;
+    color: var(--text2);
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--bg3); }
+  .nav-tab.active {
+    color: var(--green);
+    background: rgba(7,193,96,0.1);
+    border-color: rgba(7,193,96,0.3);
+  }
+
+  /* ── Sections ── */
+  .section { display: none; padding: 40px 48px; }
+  .section.active { display: block; }
+
+  .section-title {
+    font-size: 18px; font-weight: 700; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(to right, var(--border), transparent);
+  }
+  .section-desc { font-size: 13px; color: var(--text2); margin-bottom: 32px; }
+
+  /* ── Architecture Diagram ── */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: 1fr 180px 1fr 180px 1fr;
+    grid-template-rows: auto;
+    gap: 0;
+    align-items: start;
+    position: relative;
+  }
+
+  .arch-col { display: flex; flex-direction: column; gap: 12px; }
+  .arch-col-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text2);
+    padding: 10px 16px; background: var(--bg3);
+    border-radius: 8px; text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .arch-connector {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding-top: 52px; gap: 4px;
+  }
+  .conn-line {
+    width: 2px; background: var(--border);
+    position: relative;
+  }
+  .conn-arrow {
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid var(--border);
+  }
+
+  .arch-node {
+    border-radius: 10px; padding: 12px 16px;
+    font-size: 13px; font-weight: 500;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .arch-node:hover { transform: translateY(-1px); }
+  .arch-node .node-name { font-weight: 700; margin-bottom: 3px; }
+  .arch-node .node-desc { font-size: 11px; opacity: 0.75; line-height: 1.4; }
+
+  .node-page {
+    background: rgba(22,119,255,0.08);
+    border-color: rgba(22,119,255,0.3);
+    color: #69B2F8;
+  }
+  .node-page .node-name { color: var(--blue); }
+  .node-cf {
+    background: rgba(7,193,96,0.08);
+    border-color: rgba(7,193,96,0.3);
+  }
+  .node-cf .node-name { color: var(--green); }
+  .node-db {
+    background: rgba(114,46,209,0.08);
+    border-color: rgba(114,46,209,0.3);
+  }
+  .node-db .node-name { color: #B37FEB; }
+
+  .node-badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px; margin-bottom: 4px;
+  }
+  .badge-green { background: rgba(7,193,96,0.15); color: var(--green); }
+  .badge-blue { background: rgba(22,119,255,0.15); color: var(--blue); }
+  .badge-orange { background: rgba(250,140,22,0.15); color: var(--orange); }
+  .badge-red { background: rgba(255,77,79,0.15); color: var(--red); }
+  .badge-gray { background: rgba(140,140,140,0.15); color: var(--gray); }
+  .badge-purple { background: rgba(114,46,209,0.15); color: var(--purple); }
+
+  /* SVG connections overlay */
+  .arch-svg {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; overflow: visible;
+  }
+
+  /* ── Flow Diagrams ── */
+  .flows-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .flow-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px;
+  }
+  .flow-title {
+    font-size: 14px; font-weight: 700; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .flow-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 900; flex-shrink: 0;
+  }
+
+  .flow-steps { display: flex; flex-direction: column; }
+  .flow-step {
+    display: flex; align-items: flex-start; gap: 12px;
+    position: relative;
+  }
+  .flow-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 15px; top: 32px;
+    width: 2px; height: calc(100% - 8px);
+    background: var(--border);
+  }
+  .flow-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+    position: relative; z-index: 1;
+  }
+  .flow-content { padding: 4px 0 20px; flex: 1; }
+  .flow-action { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .flow-detail { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .flow-tag {
+    display: inline-block; font-size: 10px; padding: 2px 8px;
+    border-radius: 20px; margin-top: 6px; font-family: var(--mono);
+  }
+
+  /* ── Permission Matrix ── */
+  .matrix-wrap { overflow-x: auto; }
+  .matrix {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    font-size: 13px;
+  }
+  .matrix th {
+    background: var(--bg3); padding: 12px 16px;
+    text-align: left; font-weight: 700; font-size: 12px;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+  .matrix th:first-child { border-radius: 8px 0 0 0; }
+  .matrix th:last-child { border-radius: 0 8px 0 0; }
+  .matrix td {
+    padding: 11px 16px; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .matrix tr:hover td { background: rgba(255,255,255,0.02); }
+  .matrix tr:last-child td:first-child { border-radius: 0 0 0 8px; }
+  .matrix tr:last-child td:last-child { border-radius: 0 0 8px 0; }
+
+  .perm-yes {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .perm-yes.full { background: rgba(7,193,96,0.2); color: var(--green); }
+  .perm-yes.partial { background: rgba(250,140,22,0.2); color: var(--orange); }
+  .perm-no { color: var(--border); font-size: 16px; }
+
+  .role-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  }
+  .role-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* ── Nav Map ── */
+  .navmap-container { position: relative; }
+  .navmap-svg { width: 100%; overflow: visible; }
+
+  .page-box {
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .page-box:hover rect { filter: brightness(1.2); }
+  .page-box text { font-family: var(--font); }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin-top: 24px; padding: 16px 20px;
+    background: var(--bg3); border-radius: 10px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .section { padding: 24px 20px; }
+    .header { padding: 24px 20px; }
+    .nav { padding: 12px 20px; }
+    .flows-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+
+  .highlight-pulse {
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.4s ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Action items within CF node */
+  .cf-actions {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+  }
+  .cf-action {
+    font-size: 10px; font-family: var(--mono);
+    padding: 2px 7px; border-radius: 4px;
+    background: rgba(7,193,96,0.1); color: #52E088;
+  }
+
+  .arch-section-wrap {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+  .arch-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px;
+  }
+  .arch-section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; padding: 6px 12px;
+    border-radius: 6px; margin-bottom: 16px;
+    display: inline-block;
+  }
+  .arch-item {
+    border-radius: 10px; padding: 12px 14px;
+    margin-bottom: 10px; border: 1px solid;
+    transition: all 0.2s; cursor: default;
+  }
+  .arch-item:hover { transform: translateX(3px); }
+  .arch-item-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .arch-item-desc { font-size: 11px; color: var(--text2); line-height: 1.5; }
+  .arch-item-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .arch-tag {
+    font-size: 10px; font-family: var(--mono);
+    padding: 2px 7px; border-radius: 4px;
+  }
+
+  /* DB schema pills */
+  .db-fields {
+    display: flex; flex-wrap: wrap; gap: 3px; margin-top: 6px;
+  }
+  .db-field {
+    font-size: 10px; font-family: var(--mono);
+    padding: 2px 7px; border-radius: 4px;
+    background: rgba(114,46,209,0.1); color: #B37FEB;
+  }
+  .db-field.key { background: rgba(250,140,22,0.1); color: var(--orange); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">班费管理小程序</div>
+  <div class="header-sub">Architecture · Interaction Flows · Role Matrix · Navigation Map</div>
+</div>
+
+<nav class="nav">
+  <div class="nav-tab active" onclick="switchTab('arch')">🏗 模块架构</div>
+  <div class="nav-tab" onclick="switchTab('flows')">🔄 交互流程</div>
+  <div class="nav-tab" onclick="switchTab('matrix')">🔐 权限矩阵</div>
+  <div class="nav-tab" onclick="switchTab('navmap')">🗺 页面导航图</div>
+</nav>
+
+<!-- ══ 1. Architecture ══════════════════════════════════════════ -->
+<div id="tab-arch" class="section active fade-in">
+  <div class="section-title">模块架构总览</div>
+  <div class="section-desc">10 个页面 · 5 个云函数 · 8 个数据集合 — 按功能层分组展示</div>
+
+  <div class="arch-section-wrap">
+
+    <!-- Pages -->
+    <div class="arch-section">
+      <div class="arch-section-title badge-blue" style="background:rgba(22,119,255,0.12);color:#69B2F8">📱 Pages（小程序页面）</div>
+
+      <div class="arch-item" style="background:rgba(22,119,255,0.06);border-color:rgba(22,119,255,0.2)">
+        <div class="arch-item-name" style="color:#69B2F8">onboard</div>
+        <div class="arch-item-desc">新用户注册，绑定孩子信息，调用 getRole 确定角色</div>
+        <div class="arch-item-tags"><span class="arch-tag" style="background:rgba(140,140,140,0.1);color:#8C8C8C">全员</span></div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(22,119,255,0.06);border-color:rgba(22,119,255,0.2)">
+        <div class="arch-item-name" style="color:#69B2F8">setup</div>
+        <div class="arch-item-desc">班级初始化设置：学年、班级名称</div>
+        <div class="arch-item-tags"><span class="arch-tag" style="background:rgba(7,193,96,0.1);color:#07C160">chair / cashier</span></div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(22,119,255,0.06);border-color:rgba(22,119,255,0.2)">
+        <div class="arch-item-name" style="color:#69B2F8">index</div>
+        <div class="arch-item-desc">首页：班费余额 + 专项余额、4项统计、快捷入口</div>
+        <div class="arch-item-tags"><span class="arch-tag" style="background:rgba(140,140,140,0.1);color:#8C8C8C">全员</span></div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(22,119,255,0.06);border-color:rgba(22,119,255,0.2)">
+        <div class="arch-item-name" style="color:#69B2F8">detail</div>
+        <div class="arch-item-desc">账本详情：收支记录、专项基金管理、CSV 导出</div>
+        <div class="arch-item-tags"><span class="arch-tag" style="background:rgba(7,193,96,0.1);color:#07C160">委员+</span></div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(22,119,255,0.06);border-color:rgba(22,119,255,0.2)">
+        <div class="arch-item-name" style="color:#69B2F8">add</div>
+        <div class="arch-item-desc">录入支出或收费；支持专项基金模式（fundId 参数）</div>
+        <div class="arch-item-tags"><span class="arch-tag" style="background:rgba(7,193,96,0.1);color:#07C160">委员</span><span class="arch-tag" style="background:rgba(250,140,22,0.1);color:#FA8C16">收费→出纳</span></div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(22,119,255,0.06);border-color:rgba(22,119,255,0.2)">
+        <div class="arch-item-name" style="color:#69B2F8">confirm</div>
+        <div class="arch-item-desc">待确认缴费审核，出纳逐条确认写入 incomes</div>
+        <div class="arch-item-tags"><span class="arch-tag" style="background:rgba(250,140,22,0.1);color:#FA8C16">出纳专属</span></div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(22,119,255,0.06);border-color:rgba(22,119,255,0.2)">
+        <div class="arch-item-name" style="color:#69B2F8">record</div>
+        <div class="arch-item-desc">记录详情：凭证预览、报销状态、出纳标记报销</div>
+        <div class="arch-item-tags"><span class="arch-tag" style="background:rgba(140,140,140,0.1);color:#8C8C8C">全员</span></div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(22,119,255,0.06);border-color:rgba(22,119,255,0.2)">
+        <div class="arch-item-name" style="color:#69B2F8">members</div>
+        <div class="arch-item-desc">全班名单；点击学生跳转录入收费</div>
+        <div class="arch-item-tags"><span class="arch-tag" style="background:rgba(140,140,140,0.1);color:#8C8C8C">全员</span></div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(22,119,255,0.06);border-color:rgba(22,119,255,0.2)">
+        <div class="arch-item-name" style="color:#69B2F8">roles</div>
+        <div class="arch-item-desc">成员角色管理，自定义底部弹窗选择 7 种角色</div>
+        <div class="arch-item-tags"><span class="arch-tag" style="background:rgba(255,77,79,0.1);color:#FF4D4F">仅主任</span></div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(22,119,255,0.06);border-color:rgba(22,119,255,0.2)">
+        <div class="arch-item-name" style="color:#69B2F8">profile</div>
+        <div class="arch-item-desc">个人中心：缴费历史、角色相关快捷入口</div>
+        <div class="arch-item-tags"><span class="arch-tag" style="background:rgba(140,140,140,0.1);color:#8C8C8C">全员</span></div>
+      </div>
+    </div>
+
+    <!-- Cloud Functions -->
+    <div class="arch-section">
+      <div class="arch-section-title badge-green" style="background:rgba(7,193,96,0.12);color:#07C160">☁️ Cloud Functions（云函数）</div>
+
+      <div class="arch-item" style="background:rgba(7,193,96,0.05);border-color:rgba(7,193,96,0.2)">
+        <div class="arch-item-name" style="color:#52E088">getRole</div>
+        <div class="arch-item-desc">App 启动时调用，查询 classAdmins 返回当前用户角色</div>
+        <div class="arch-item-tags">
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">getRole</span>
+        </div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(7,193,96,0.05);border-color:rgba(7,193,96,0.2)">
+        <div class="arch-item-name" style="color:#52E088">getUserList</div>
+        <div class="arch-item-desc">多 action 管理云函数，覆盖用户/支出/收入/专项全生命周期</div>
+        <div class="arch-item-tags">
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">list</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">setRole</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">getSummary</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">addExpense</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">deleteRecord</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">reimburseExpense</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">createFund</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">listFunds</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">getFundSummary</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">addFundExpense</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">transferFundBalance</span>
+          <span class="arch-tag" style="background:rgba(255,77,79,0.08);color:#FF4D4F">deleteFund</span>
+          <span class="arch-tag" style="background:rgba(255,77,79,0.08);color:#FF4D4F">deleteFundRecord</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">getYearTerms</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">getStats</span>
+        </div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(7,193,96,0.05);border-color:rgba(7,193,96,0.2)">
+        <div class="arch-item-name" style="color:#52E088">confirmFeeSubmission</div>
+        <div class="arch-item-desc">出纳确认缴费：写入 incomes，标记 feeSubmissions 为已确认，支持 fundId</div>
+        <div class="arch-item-tags">
+          <span class="arch-tag" style="background:rgba(250,140,22,0.1);color:#FA8C16">出纳专属</span>
+        </div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(7,193,96,0.05);border-color:rgba(7,193,96,0.2)">
+        <div class="arch-item-name" style="color:#52E088">approveExpenseClaim</div>
+        <div class="arch-item-desc">审批支出报销申请，更新报销状态</div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(7,193,96,0.05);border-color:rgba(7,193,96,0.2)">
+        <div class="arch-item-name" style="color:#52E088">importMembers</div>
+        <div class="arch-item-desc">action:list 返回完整班级花名册；action:import 批量导入学生</div>
+        <div class="arch-item-tags">
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">list</span>
+          <span class="arch-tag" style="background:rgba(7,193,96,0.08);color:#52E088">import</span>
+        </div>
+      </div>
+
+      <!-- Arrows legend -->
+      <div style="margin-top:20px;padding:14px;background:var(--bg3);border-radius:10px;font-size:11px;color:var(--text2);line-height:1.8">
+        <div style="font-weight:700;color:var(--text);margin-bottom:6px">数据过滤策略</div>
+        <div>• <code style="color:#52E088">fundId</code> 存在 → 专项收支</div>
+        <div>• <code style="color:#52E088">!fundId</code> → 班费收支</div>
+        <div>• 客户端 filter，无需 null 查询</div>
+        <div>• getSummary 一次性拉取全部，前端分组</div>
+      </div>
+    </div>
+
+    <!-- Database -->
+    <div class="arch-section">
+      <div class="arch-section-title badge-purple" style="background:rgba(114,46,209,0.12);color:#B37FEB">🗄 Collections（数据集合）</div>
+
+      <div class="arch-item" style="background:rgba(114,46,209,0.05);border-color:rgba(114,46,209,0.2)">
+        <div class="arch-item-name" style="color:#B37FEB">users</div>
+        <div class="arch-item-desc">微信授权用户，含姓名、孩子信息</div>
+        <div class="db-fields">
+          <span class="db-field key">_openid</span>
+          <span class="db-field">name</span>
+          <span class="db-field">childName</span>
+          <span class="db-field">createdAt</span>
+        </div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(114,46,209,0.05);border-color:rgba(114,46,209,0.2)">
+        <div class="arch-item-name" style="color:#B37FEB">classAdmins</div>
+        <div class="arch-item-desc">家委会角色表，有记录=委员，无记录=家长</div>
+        <div class="db-fields">
+          <span class="db-field key">openid</span>
+          <span class="db-field">role</span>
+        </div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(114,46,209,0.05);border-color:rgba(114,46,209,0.2)">
+        <div class="arch-item-name" style="color:#B37FEB">classSettings</div>
+        <div class="arch-item-desc">班级配置：学年、班级名称（全局唯一）</div>
+        <div class="db-fields">
+          <span class="db-field">yearTerm</span>
+          <span class="db-field">className</span>
+        </div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(114,46,209,0.05);border-color:rgba(114,46,209,0.2)">
+        <div class="arch-item-name" style="color:#B37FEB">students</div>
+        <div class="arch-item-desc">全班花名册（由老师导入），不依赖注册</div>
+        <div class="db-fields">
+          <span class="db-field key">studentNo</span>
+          <span class="db-field">name</span>
+        </div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(114,46,209,0.05);border-color:rgba(114,46,209,0.2)">
+        <div class="arch-item-name" style="color:#B37FEB">feeSubmissions</div>
+        <div class="arch-item-desc">家长缴费申请（待确认队列）</div>
+        <div class="db-fields">
+          <span class="db-field key">_openid</span>
+          <span class="db-field">amount</span>
+          <span class="db-field">status</span>
+          <span class="db-field">fundId?</span>
+          <span class="db-field">yearTerm</span>
+        </div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(114,46,209,0.05);border-color:rgba(114,46,209,0.2)">
+        <div class="arch-item-name" style="color:#B37FEB">incomes</div>
+        <div class="arch-item-desc">已确认收入记录；fundId 区分班费/专项</div>
+        <div class="db-fields">
+          <span class="db-field">amount</span>
+          <span class="db-field">childName</span>
+          <span class="db-field">date</span>
+          <span class="db-field">fundId?</span>
+          <span class="db-field">yearTerm</span>
+          <span class="db-field">payMethod</span>
+        </div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(114,46,209,0.05);border-color:rgba(114,46,209,0.2)">
+        <div class="arch-item-name" style="color:#B37FEB">expenses</div>
+        <div class="arch-item-desc">支出记录；fundId 区分班费/专项；含凭证、报销状态</div>
+        <div class="db-fields">
+          <span class="db-field">title</span>
+          <span class="db-field">amount</span>
+          <span class="db-field">category</span>
+          <span class="db-field">fundId?</span>
+          <span class="db-field">receipts[]</span>
+          <span class="db-field">reimbursementStatus</span>
+        </div>
+      </div>
+
+      <div class="arch-item" style="background:rgba(114,46,209,0.05);border-color:rgba(114,46,209,0.2)">
+        <div class="arch-item-name" style="color:#B37FEB">specialFunds</div>
+        <div class="arch-item-desc">专项活动基金；结余转入后 status→closed</div>
+        <div class="db-fields">
+          <span class="db-field key">_id</span>
+          <span class="db-field">name</span>
+          <span class="db-field">feePerStudent</span>
+          <span class="db-field">status</span>
+          <span class="db-field">transferredToGeneral</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(22,119,255,0.5)"></div>页面层</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(7,193,96,0.5)"></div>云函数层</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(114,46,209,0.5)"></div>数据层</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(250,140,22,0.5)"></div>出纳专属</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(255,77,79,0.5)"></div>删除/破坏性操作</div>
+    <div class="legend-item" style="color:var(--text2);font-family:var(--mono);font-size:11px">fundId? = 可选字段，存在时归属专项</div>
+  </div>
+</div>
+
+<!-- ══ 2. Flows ══════════════════════════════════════════════════ -->
+<div id="tab-flows" class="section fade-in">
+  <div class="section-title">交互流程图</div>
+  <div class="section-desc">5 条核心用户旅程，从触发到数据落库的完整链路</div>
+
+  <div class="flows-grid">
+
+    <!-- Flow 1 -->
+    <div class="flow-card">
+      <div class="flow-title">
+        <div class="flow-num" style="background:rgba(140,140,140,0.15);color:#8C8C8C">1</div>
+        新用户注册 → 确定角色
+      </div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(140,140,140,0.15);color:#8C8C8C">👤</div>
+          <div class="flow-content">
+            <div class="flow-action">用户首次打开小程序</div>
+            <div class="flow-detail">app.js 调用 getRole CF → 查 classAdmins</div>
+            <span class="flow-tag" style="background:rgba(22,119,255,0.1);color:#69B2F8">app.js → getRole CF</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(22,119,255,0.15);color:#69B2F8">📋</div>
+          <div class="flow-content">
+            <div class="flow-action">跳转 onboard 页面</div>
+            <div class="flow-detail">填写姓名、绑定孩子姓名，写入 users 集合</div>
+            <span class="flow-tag" style="background:rgba(114,46,209,0.1);color:#B37FEB">写 → users</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">✓</div>
+          <div class="flow-content">
+            <div class="flow-action">写入完成 → 调用 getRole</div>
+            <div class="flow-detail">查询 classAdmins：有记录返回对应角色，无记录返回 'parent'</div>
+            <span class="flow-tag" style="background:rgba(7,193,96,0.1);color:#07C160">getRole → globalData.role</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">🏠</div>
+          <div class="flow-content">
+            <div class="flow-action">navigateTo index</div>
+            <div class="flow-detail">根据 role 决定首页显示内容：委员看到管理快捷入口；家长看只读视图</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flow 2 -->
+    <div class="flow-card">
+      <div class="flow-title">
+        <div class="flow-num" style="background:rgba(22,119,255,0.15);color:#69B2F8">2</div>
+        家长缴费 → 出纳确认
+      </div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(22,119,255,0.15);color:#69B2F8">💳</div>
+          <div class="flow-content">
+            <div class="flow-action">家长在 index 页提交缴费</div>
+            <div class="flow-detail">填写金额、转账凭证，写入 feeSubmissions（status: pending）</div>
+            <span class="flow-tag" style="background:rgba(114,46,209,0.1);color:#B37FEB">写 → feeSubmissions</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(250,140,22,0.15);color:#FA8C16">🔔</div>
+          <div class="flow-content">
+            <div class="flow-action">出纳打开 confirm 页</div>
+            <div class="flow-detail">调 getUserList:getPending 拉取 pending 列表，按提交时间排序</div>
+            <span class="flow-tag" style="background:rgba(7,193,96,0.1);color:#07C160">getPending</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(250,140,22,0.15);color:#FA8C16">✅</div>
+          <div class="flow-content">
+            <div class="flow-action">出纳点「确认」</div>
+            <div class="flow-detail">调用 confirmFeeSubmission CF：写入 incomes，更新 feeSubmissions.status = confirmed，支持 fundId</div>
+            <span class="flow-tag" style="background:rgba(250,140,22,0.1);color:#FA8C16">confirmFeeSubmission CF</span>
+            <span class="flow-tag" style="background:rgba(114,46,209,0.1);color:#B37FEB">写 → incomes</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">📊</div>
+          <div class="flow-content">
+            <div class="flow-action">detail 页汇总更新</div>
+            <div class="flow-detail">onShow 触发 loadAllData，getSummary 重新拉取，余额实时刷新</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flow 3 -->
+    <div class="flow-card">
+      <div class="flow-title">
+        <div class="flow-num" style="background:rgba(7,193,96,0.15);color:#07C160">3</div>
+        委员录入支出
+      </div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">📝</div>
+          <div class="flow-content">
+            <div class="flow-action">委员进入 add 页（支出模式）</div>
+            <div class="flow-detail">填写金额、事项名称、垫付人、日期、分类，可上传凭证（最多6张，云存储）</div>
+            <span class="flow-tag" style="background:rgba(22,119,255,0.1);color:#69B2F8">add?type=expense</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">📸</div>
+          <div class="flow-content">
+            <div class="flow-action">上传凭证图片</div>
+            <div class="flow-detail">wx.chooseMedia → wx.cloud.uploadFile → 写入 receipts[] fileID</div>
+            <span class="flow-tag" style="background:rgba(7,193,96,0.1);color:#07C160">云存储</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">☁️</div>
+          <div class="flow-content">
+            <div class="flow-action">提交表单</div>
+            <div class="flow-detail">调用 getUserList:addExpense CF，服务端校验金额/日期/学年，写入 expenses</div>
+            <span class="flow-tag" style="background:rgba(7,193,96,0.1);color:#07C160">addExpense CF</span>
+            <span class="flow-tag" style="background:rgba(114,46,209,0.1);color:#B37FEB">写 → expenses</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">↩</div>
+          <div class="flow-content">
+            <div class="flow-action">navigateBack → detail 刷新</div>
+            <div class="flow-detail">onShow 检查 _refreshFundId 信号 → 重新加载汇总和记录列表</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flow 4 -->
+    <div class="flow-card">
+      <div class="flow-title">
+        <div class="flow-num" style="background:rgba(250,140,22,0.15);color:#FA8C16">4</div>
+        专项基金全生命周期
+      </div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">🎯</div>
+          <div class="flow-content">
+            <div class="flow-action">主任/出纳新建专项</div>
+            <div class="flow-detail">detail → 专项 tab → showModal 输入名称和每人金额 → createFund CF → specialFunds</div>
+            <span class="flow-tag" style="background:rgba(7,193,96,0.1);color:#07C160">createFund</span>
+            <span class="flow-tag" style="background:rgba(114,46,209,0.1);color:#B37FEB">写 → specialFunds</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(250,140,22,0.15);color:#FA8C16">💰</div>
+          <div class="flow-content">
+            <div class="flow-action">出纳录入专项收费</div>
+            <div class="flow-detail">add?fundId=xxx 显示橙色专项横幅，选学生 → 写 incomes（含 fundId）</div>
+            <span class="flow-tag" style="background:rgba(250,140,22,0.1);color:#FA8C16">incomes.fundId = xxx</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">📋</div>
+          <div class="flow-content">
+            <div class="flow-action">委员添加专项支出</div>
+            <div class="flow-detail">add?fundId=xxx → addFundExpense CF → 写 expenses（含 fundId）；CF 校验专项 status=active</div>
+            <span class="flow-tag" style="background:rgba(7,193,96,0.1);color:#07C160">addFundExpense</span>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot" style="background:rgba(250,140,22,0.15);color:#FA8C16">🔄</div>
+          <div class="flow-content">
+            <div class="flow-action">出纳结余转入班费</div>
+            <div class="flow-detail">transferFundBalance CF：双分录（专项写支出 + 班费写收入），关闭专项 status→closed</div>
+            <span class="flow-tag" style="background:rgba(250,140,22,0.1);color:#FA8C16">transferFundBalance</span>
+            <span class="flow-tag" style="background:rgba(255,77,79,0.1);color:#FF4D4F">幂等保护</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flow 5 (full width) -->
+    <div class="flow-card" style="grid-column: 1 / -1;">
+      <div class="flow-title">
+        <div class="flow-num" style="background:rgba(114,46,209,0.15);color:#B37FEB">5</div>
+        detail 页学年切换与数据分流策略
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-dot" style="background:rgba(114,46,209,0.15);color:#B37FEB">📅</div>
+            <div class="flow-content">
+              <div class="flow-action">页面 onShow → loadYearTerms</div>
+              <div class="flow-detail">调 getYearTerms，读 incomes + expenses 中全部 yearTerm 字段，去重排序</div>
+              <span class="flow-tag" style="background:rgba(114,46,209,0.1);color:#B37FEB">getYearTerms</span>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-dot" style="background:rgba(114,46,209,0.15);color:#B37FEB">🔄</div>
+            <div class="flow-content">
+              <div class="flow-action">用户点击学年 Tab → switchYearTerm</div>
+              <div class="flow-detail">setData selectedYearTerm → 调 loadAllData(yearTerm) + loadFunds(yearTerm)</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">📊</div>
+            <div class="flow-content">
+              <div class="flow-action">getSummary 拉取全量数据</div>
+              <div class="flow-detail">一次 CF 调用返回该学年所有 incomes + expenses（含专项）</div>
+              <span class="flow-tag" style="background:rgba(7,193,96,0.1);color:#07C160">getSummary</span>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-dot" style="background:rgba(7,193,96,0.15);color:#07C160">🔀</div>
+            <div class="flow-content">
+              <div class="flow-action">客户端 filter 分流（无需 null 查询）</div>
+              <div class="flow-detail">!fundId → 班费；!!fundId → 专项。两套汇总数字独立计算后 setData</div>
+              <span class="flow-tag" style="background:rgba(22,119,255,0.1);color:#69B2F8">client-side filter</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data flow visual -->
+        <div style="background:var(--bg3);border-radius:12px;padding:20px;font-size:12px;font-family:var(--mono)">
+          <div style="color:var(--text2);margin-bottom:12px;font-size:11px;letter-spacing:1px;text-transform:uppercase">数据分流示意</div>
+
+          <div style="background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid var(--border)">
+            <div style="color:#52E088;margin-bottom:8px">getSummary({ yearTerm })</div>
+            <div style="color:var(--text2)">↓ returns all incomes + expenses</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div style="background:rgba(7,193,96,0.06);border:1px solid rgba(7,193,96,0.2);border-radius:8px;padding:10px">
+              <div style="color:#52E088;margin-bottom:6px">.filter(!r.fundId)</div>
+              <div style="color:var(--text2);font-size:10px">→ _expenses (班费)</div>
+              <div style="color:var(--text2);font-size:10px">→ _incomes (班费)</div>
+              <div style="margin-top:8px;color:var(--green);font-size:11px">班费收入 / 支出 / 余额</div>
+            </div>
+            <div style="background:rgba(250,140,22,0.06);border:1px solid rgba(250,140,22,0.2);border-radius:8px;padding:10px">
+              <div style="color:#FA8C16;margin-bottom:6px">.filter(!!r.fundId)</div>
+              <div style="color:var(--text2);font-size:10px">→ spExpenses (专项)</div>
+              <div style="color:var(--text2);font-size:10px">→ spIncomes (专项)</div>
+              <div style="margin-top:8px;color:#FA8C16;font-size:11px">专项收入 / 支出 / 余额</div>
+            </div>
+          </div>
+
+          <div style="background:var(--bg2);border-radius:8px;padding:10px;border:1px solid var(--border)">
+            <div style="color:var(--text2);font-size:10px">_expenses / _incomes 仅含班费记录</div>
+            <div style="color:var(--text2);font-size:10px">用于 全部/支出/收入 tab 列表显示</div>
+            <div style="color:var(--text2);font-size:10px">不污染 applyFilters / buildChartData</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ 3. Permission Matrix ══════════════════════════════════════ -->
+<div id="tab-matrix" class="section fade-in">
+  <div class="section-title">角色权限矩阵</div>
+  <div class="section-desc">6 种角色 × 主要功能模块的访问与操作权限</div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px">
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+      <div style="width:24px;height:24px;border-radius:50%;background:rgba(7,193,96,0.2);display:flex;align-items:center;justify-content:center;color:#07C160;font-weight:700;font-size:12px">✓</div>
+      <span>完全权限</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+      <div style="width:24px;height:24px;border-radius:50%;background:rgba(250,140,22,0.2);display:flex;align-items:center;justify-content:center;color:#FA8C16;font-weight:700;font-size:12px">◑</div>
+      <span>部分权限</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+      <span style="color:var(--border);font-size:20px">—</span>
+      <span>无权限</span>
+    </div>
+  </div>
+
+  <div class="matrix-wrap">
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th style="min-width:180px">功能模块</th>
+          <th>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#FF4D4F"></div>
+              家委主任
+            </div>
+          </th>
+          <th>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#FA8C16"></div>
+              出纳
+            </div>
+          </th>
+          <th>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#B37FEB"></div>
+              三班总会
+            </div>
+          </th>
+          <th>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#07C160"></div>
+              委员 ×3
+            </div>
+          </th>
+          <th>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#8C8C8C"></div>
+              成长合伙人
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>查看首页余额 / 统计</strong></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+        </tr>
+        <tr>
+          <td><strong>查看收支详情 (detail)</strong></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>录入支出 (add expense)</strong></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>录入收费 (add income)</strong></td>
+          <td><span class="perm-no">—</span></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>确认缴费 (confirm)</strong></td>
+          <td><span class="perm-no">—</span></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>新建专项基金</strong></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>专项结余转班费</strong></td>
+          <td><span class="perm-no">—</span></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>删除专项/记录</strong></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>标记支出已报销</strong></td>
+          <td><span class="perm-no">—</span></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>导出 CSV</strong></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>管理成员角色 (roles)</strong></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>班级初始化 (setup)</strong></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+        <tr>
+          <td><strong>查看全班名单 (members)</strong></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><div class="perm-yes full">✓</div></td>
+        </tr>
+        <tr>
+          <td><strong>从名单发起收费录入</strong></td>
+          <td><span class="perm-no">—</span></td>
+          <td><div class="perm-yes full">✓</div></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+          <td><span class="perm-no">—</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:24px;padding:16px 20px;background:var(--bg3);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.9">
+    <div style="font-weight:700;color:var(--text);margin-bottom:6px">角色判断机制</div>
+    <div>• <code style="color:#52E088">classAdmins</code> 集合：有记录 = 委员，无记录 = parent</div>
+    <div>• 每次 App 启动调用 <code style="color:#52E088">getRole CF</code>，结果存入 <code style="color:#52E088">app.globalData.role</code></div>
+    <div>• 页面内通过 <code style="color:#52E088">app.globalData.role</code> 直接字符串比较，不使用 getter（防止 this 绑定问题）</div>
+    <div>• 云函数端通过 <code style="color:#52E088">getCallerAdmin(db, OPENID)</code> 独立验权，前端权限控制仅用于 UI 显示</div>
+  </div>
+</div>
+
+<!-- ══ 4. Navigation Map ═════════════════════════════════════════ -->
+<div id="tab-navmap" class="section fade-in">
+  <div class="section-title">页面导航图</div>
+  <div class="section-desc">各页面之间的跳转关系与触发条件</div>
+
+  <svg class="navmap-svg" viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#07C160"/>
+      </marker>
+      <marker id="arr-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#1677FF"/>
+      </marker>
+      <marker id="arr-orange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#FA8C16"/>
+      </marker>
+      <marker id="arr-gray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#4A5568"/>
+      </marker>
+    </defs>
+
+    <!-- App.js (launch) -->
+    <g class="page-box">
+      <rect x="370" y="10" width="120" height="46" rx="10" fill="rgba(7,193,96,0.1)" stroke="#07C160" stroke-width="1.5"/>
+      <text x="430" y="30" text-anchor="middle" fill="#52E088" font-size="11" font-weight="700" font-family="JetBrains Mono, monospace">app.js</text>
+      <text x="430" y="47" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">启动 / getRole</text>
+    </g>
+
+    <!-- onboard -->
+    <g class="page-box">
+      <rect x="110" y="90" width="110" height="46" rx="10" fill="rgba(22,119,255,0.08)" stroke="rgba(22,119,255,0.35)" stroke-width="1.5"/>
+      <text x="165" y="110" text-anchor="middle" fill="#69B2F8" font-size="12" font-weight="700" font-family="JetBrains Mono, monospace">onboard</text>
+      <text x="165" y="127" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">注册 / 绑定孩子</text>
+    </g>
+
+    <!-- index (center) -->
+    <g class="page-box">
+      <rect x="340" y="110" width="150" height="56" rx="12" fill="rgba(7,193,96,0.12)" stroke="#07C160" stroke-width="2"/>
+      <text x="415" y="133" text-anchor="middle" fill="#07C160" font-size="13" font-weight="900" font-family="JetBrains Mono, monospace">index</text>
+      <text x="415" y="153" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">首页（所有用户）</text>
+    </g>
+
+    <!-- setup -->
+    <g class="page-box">
+      <rect x="650" y="90" width="110" height="46" rx="10" fill="rgba(250,140,22,0.08)" stroke="rgba(250,140,22,0.35)" stroke-width="1.5"/>
+      <text x="705" y="110" text-anchor="middle" fill="#FA8C16" font-size="12" font-weight="700" font-family="JetBrains Mono, monospace">setup</text>
+      <text x="705" y="127" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">班级初始化</text>
+    </g>
+
+    <!-- detail -->
+    <g class="page-box">
+      <rect x="180" y="240" width="140" height="46" rx="10" fill="rgba(22,119,255,0.08)" stroke="rgba(22,119,255,0.3)" stroke-width="1.5"/>
+      <text x="250" y="259" text-anchor="middle" fill="#69B2F8" font-size="12" font-weight="700" font-family="JetBrains Mono, monospace">detail</text>
+      <text x="250" y="277" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">账本详情</text>
+    </g>
+
+    <!-- add -->
+    <g class="page-box">
+      <rect x="370" y="240" width="120" height="46" rx="10" fill="rgba(7,193,96,0.08)" stroke="rgba(7,193,96,0.3)" stroke-width="1.5"/>
+      <text x="430" y="259" text-anchor="middle" fill="#52E088" font-size="12" font-weight="700" font-family="JetBrains Mono, monospace">add</text>
+      <text x="430" y="277" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">录入支出/收费</text>
+    </g>
+
+    <!-- confirm -->
+    <g class="page-box">
+      <rect x="560" y="240" width="120" height="46" rx="10" fill="rgba(250,140,22,0.08)" stroke="rgba(250,140,22,0.3)" stroke-width="1.5"/>
+      <text x="620" y="259" text-anchor="middle" fill="#FA8C16" font-size="12" font-weight="700" font-family="JetBrains Mono, monospace">confirm</text>
+      <text x="620" y="277" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">确认缴费</text>
+    </g>
+
+    <!-- profile -->
+    <g class="page-box">
+      <rect x="730" y="240" width="110" height="46" rx="10" fill="rgba(22,119,255,0.08)" stroke="rgba(22,119,255,0.3)" stroke-width="1.5"/>
+      <text x="785" y="259" text-anchor="middle" fill="#69B2F8" font-size="12" font-weight="700" font-family="JetBrains Mono, monospace">profile</text>
+      <text x="785" y="277" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">个人中心</text>
+    </g>
+
+    <!-- record -->
+    <g class="page-box">
+      <rect x="80" y="390" width="120" height="46" rx="10" fill="rgba(22,119,255,0.08)" stroke="rgba(22,119,255,0.3)" stroke-width="1.5"/>
+      <text x="140" y="409" text-anchor="middle" fill="#69B2F8" font-size="12" font-weight="700" font-family="JetBrains Mono, monospace">record</text>
+      <text x="140" y="427" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">记录详情</text>
+    </g>
+
+    <!-- members -->
+    <g class="page-box">
+      <rect x="290" y="390" width="120" height="46" rx="10" fill="rgba(22,119,255,0.08)" stroke="rgba(22,119,255,0.3)" stroke-width="1.5"/>
+      <text x="350" y="409" text-anchor="middle" fill="#69B2F8" font-size="12" font-weight="700" font-family="JetBrains Mono, monospace">members</text>
+      <text x="350" y="427" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">全班名单</text>
+    </g>
+
+    <!-- roles -->
+    <g class="page-box">
+      <rect x="500" y="390" width="120" height="46" rx="10" fill="rgba(255,77,79,0.08)" stroke="rgba(255,77,79,0.3)" stroke-width="1.5"/>
+      <text x="560" y="409" text-anchor="middle" fill="#FF7875" font-size="12" font-weight="700" font-family="JetBrains Mono, monospace">roles</text>
+      <text x="560" y="427" text-anchor="middle" fill="#8A9BB5" font-size="10" font-family="Noto Sans SC, sans-serif">角色管理</text>
+    </g>
+
+    <!-- ── Arrows ── -->
+
+    <!-- app → onboard (new user) -->
+    <path d="M 390 33 L 215 90" stroke="#1677FF" stroke-width="1.5" stroke-dasharray="5,3" fill="none" marker-end="url(#arr-blue)"/>
+    <text x="285" y="62" fill="#4A7AB5" font-size="10" font-family="Noto Sans SC" text-anchor="middle">首次注册</text>
+
+    <!-- app → index (returning user) -->
+    <path d="M 430 56 L 415 110" stroke="#07C160" stroke-width="1.5" fill="none" marker-end="url(#arr-green)"/>
+    <text x="445" y="86" fill="#3A9A6A" font-size="10" font-family="Noto Sans SC">已注册</text>
+
+    <!-- app → setup (first chair) -->
+    <path d="M 490 33 L 655 90" stroke="#FA8C16" stroke-width="1.5" stroke-dasharray="5,3" fill="none" marker-end="url(#arr-orange)"/>
+    <text x="590" y="55" fill="#A06010" font-size="10" font-family="Noto Sans SC" text-anchor="middle">初始化</text>
+
+    <!-- onboard → index -->
+    <path d="M 220 113 L 340 138" stroke="#1677FF" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+
+    <!-- index → detail -->
+    <path d="M 370 152 L 300 240" stroke="#07C160" stroke-width="1.5" fill="none" marker-end="url(#arr-green)"/>
+    <text x="318" y="204" fill="#3A9A6A" font-size="10" font-family="Noto Sans SC">账本</text>
+
+    <!-- index → add -->
+    <path d="M 415 166 L 430 240" stroke="#07C160" stroke-width="1.5" fill="none" marker-end="url(#arr-green)"/>
+    <text x="445" y="210" fill="#3A9A6A" font-size="10" font-family="Noto Sans SC">录入</text>
+
+    <!-- index → confirm (cashier) -->
+    <path d="M 470 155 L 580 240" stroke="#FA8C16" stroke-width="1.5" fill="none" marker-end="url(#arr-orange)"/>
+    <text x="548" y="195" fill="#A06010" font-size="10" font-family="Noto Sans SC">确认</text>
+
+    <!-- index → profile -->
+    <path d="M 490 138 L 730 253" stroke="#4A5568" stroke-width="1.5" fill="none" marker-end="url(#arr-gray)"/>
+    <text x="640" y="185" fill="#4A5568" font-size="10" font-family="Noto Sans SC">个人</text>
+
+    <!-- detail → record -->
+    <path d="M 220 286 L 175 390" stroke="#1677FF" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+    <text x="175" y="345" fill="#4A7AB5" font-size="10" font-family="Noto Sans SC">tap 记录</text>
+
+    <!-- detail → add (fund expense/income) -->
+    <path d="M 310 263 L 380 263" stroke="#07C160" stroke-width="1.5" fill="none" marker-end="url(#arr-green)"/>
+    <text x="345" y="255" fill="#3A9A6A" font-size="10" font-family="Noto Sans SC" text-anchor="middle">fundId</text>
+
+    <!-- add → detail (navigateBack) -->
+    <path d="M 380 277 C 340 310 280 310 250 286" stroke="#07C160" stroke-width="1" stroke-dasharray="4,3" fill="none" marker-end="url(#arr-green)"/>
+    <text x="308" y="325" fill="#3A9A6A" font-size="9" font-family="Noto Sans SC" text-anchor="middle">navigateBack</text>
+
+    <!-- profile → roles (chair) -->
+    <path d="M 785 286 C 785 350 620 360 610 390" stroke="#FF4D4F" stroke-width="1.5" stroke-dasharray="5,3" fill="none" marker-end="url(#arr-gray)"/>
+    <text x="730" y="360" fill="#FF7875" font-size="10" font-family="Noto Sans SC">主任→角色管理</text>
+
+    <!-- profile → confirm (cashier) -->
+    <path d="M 755 280 L 670 286" stroke="#FA8C16" stroke-width="1.5" stroke-dasharray="5,3" fill="none" marker-end="url(#arr-orange)"/>
+
+    <!-- profile → members -->
+    <path d="M 760 286 C 700 340 450 360 400 390" stroke="#4A5568" stroke-width="1.5" stroke-dasharray="4,3" fill="none" marker-end="url(#arr-gray)"/>
+    <text x="570" y="355" fill="#4A5568" font-size="10" font-family="Noto Sans SC">名单</text>
+
+    <!-- members → add (income shortcut) -->
+    <path d="M 400 413 L 420 286" stroke="#FA8C16" stroke-width="1.5" fill="none" marker-end="url(#arr-orange)"/>
+    <text x="395" y="360" fill="#A06010" font-size="10" font-family="Noto Sans SC">收费</text>
+
+    <!-- ── Legend ── -->
+    <rect x="10" y="530" width="880" height="78" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)"/>
+    <text x="24" y="548" fill="#8A9BB5" font-size="11" font-family="Noto Sans SC" font-weight="700">图例</text>
+    <!-- green solid -->
+    <line x1="24" y1="565" x2="64" y2="565" stroke="#07C160" stroke-width="2"/>
+    <polygon points="60,562 68,565 60,568" fill="#07C160"/>
+    <text x="74" y="569" fill="#8A9BB5" font-size="11" font-family="Noto Sans SC">委员可触发</text>
+    <!-- orange solid -->
+    <line x1="200" y1="565" x2="240" y2="565" stroke="#FA8C16" stroke-width="2"/>
+    <polygon points="236,562 244,565 236,568" fill="#FA8C16"/>
+    <text x="250" y="569" fill="#8A9BB5" font-size="11" font-family="Noto Sans SC">出纳专属</text>
+    <!-- blue dashed -->
+    <line x1="370" y1="565" x2="410" y2="565" stroke="#1677FF" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <polygon points="406,562 414,565 406,568" fill="#1677FF"/>
+    <text x="420" y="569" fill="#8A9BB5" font-size="11" font-family="Noto Sans SC">有条件跳转</text>
+    <!-- gray dashed -->
+    <line x1="560" y1="565" x2="600" y2="565" stroke="#4A5568" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <polygon points="596,562 604,565 596,568" fill="#4A5568"/>
+    <text x="610" y="569" fill="#8A9BB5" font-size="11" font-family="Noto Sans SC">所有用户</text>
+    <!-- red dashed -->
+    <line x1="750" y1="565" x2="790" y2="565" stroke="#FF4D4F" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <polygon points="786,562 794,565 786,568" fill="#FF4D4F"/>
+    <text x="800" y="569" fill="#8A9BB5" font-size="11" font-family="Noto Sans SC">仅主任</text>
+
+    <text x="24" y="595" fill="#8A9BB5" font-size="11" font-family="Noto Sans SC">中心节点 index 是所有已注册用户的入口。navigateBack 返回流程（虚线）由 app.globalData._refreshFundId 信号触发刷新。</text>
+  </svg>
+</div>
+
+<script>
+  function switchTab(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('fade-in');
+    event.currentTarget.classList.add('active');
+
+    // Re-trigger fade
+    const section = document.getElementById('tab-' + name);
+    section.style.animation = 'none';
+    section.offsetHeight; // reflow
+    section.style.animation = '';
+    section.classList.add('fade-in');
+  }
+</script>
+
+</body>
+</html>

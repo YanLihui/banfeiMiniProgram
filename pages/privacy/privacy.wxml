@@ -1,0 +1,52 @@
+<!-- pages/privacy/privacy.wxml -->
+<scroll-view scroll-y class="container">
+
+  <view class="header">
+    <text class="title">隐私政策</text>
+    <text class="update-date">更新日期：2026年8月</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">一、我们收集的信息</text>
+    <text class="content">本小程序（班费账本）在您使用过程中可能收集以下信息：</text>
+    <view class="list">
+      <text class="item">• 微信昵称和头像（您主动选择提供）</text>
+      <text class="item">• 家长姓名、孩子姓名（用于身份核验）</text>
+      <text class="item">• 缴费记录和收支信息（用于班费管理）</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">二、信息使用目的</text>
+    <view class="list">
+      <text class="item">• 核验家长身份，确保仅本班家长可访问</text>
+      <text class="item">• 记录班费收支，供家委会和家长查看</text>
+      <text class="item">• 生成收费统计，辅助家委会管理工作</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">三、信息存储</text>
+    <text class="content">您的信息存储在微信云开发数据库中，受腾讯云安全保护。我们不会将您的个人信息出售或提供给任何第三方。</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">四、信息共享</text>
+    <text class="content">班费收支记录仅在本班级家委会成员和家长之间共享，不对外公开。家长个人信息（姓名、孩子姓名）仅用于本班级内部管理。</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">五、您的权利</text>
+    <view class="list">
+      <text class="item">• 您可以在「我的」页面查看和修改您的个人信息</text>
+      <text class="item">• 您可以联系家委会申请删除您的账号信息</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <text class="section-title">六、联系我们</text>
+    <text class="content">如您对本隐私政策有任何疑问，请通过班级群联系家委会。</text>
+  </view>
+
+  <view style="height: 60rpx"></view>
+</scroll-view>

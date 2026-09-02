@@ -1,0 +1,54 @@
+/* app.wxss — 全局样式 */
+page {
+  font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  background-color: #F5F7FA;
+  color: #1C1C1C;
+  font-size: 28rpx;
+  line-height: 1.5;
+}
+
+/* ── 通用颜色 ─────────────────────────────── */
+.text-green  { color: #07C160; }
+.text-red    { color: #FF4D4F; }
+.text-orange { color: #FA8C16; }
+.text-gray   { color: #ADADAD; }
+.text-bold   { font-weight: 700; }
+.text-sm     { font-size: 24rpx; }
+
+/* ── 通用卡片 ─────────────────────────────── */
+.card {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+/* ── 通用列表项 ───────────────────────────── */
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 32rpx;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+.list-item:last-child { border-bottom: none; }
+
+/* ── 通用空状态 ───────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 0;
+  color: #ADADAD;
+  font-size: 28rpx;
+}
+.empty-state text { margin-top: 16rpx; }
+
+/* ── 底部安全区 ───────────────────────────── */
+.safe-bottom { height: env(safe-area-inset-bottom); }
+
+/* ── 加载动画 ─────────────────────────────── */
+.loading-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 60rpx 0;
+}

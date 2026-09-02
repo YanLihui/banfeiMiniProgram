@@ -1,0 +1,177 @@
+/* pages/setup/setup.wxss */
+
+.container {
+  min-height: 100vh;
+  background: #F5F7FA;
+  padding-bottom: 40rpx;
+}
+
+/* ── 步骤条 ────────────────────────────────── */
+.steps-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx 60rpx 24rpx;
+  gap: 0;
+}
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+.step-circle {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: #E0E0E0;
+  color: #ADADAD;
+  font-size: 26rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-item.active .step-circle {
+  background: #07C160;
+  color: white;
+}
+.step-label {
+  font-size: 22rpx;
+  color: #ADADAD;
+}
+.step-item.active .step-label {
+  color: #07C160;
+  font-weight: 600;
+}
+.step-line {
+  flex: 1;
+  height: 4rpx;
+  background: #E0E0E0;
+  margin: 0 16rpx;
+  margin-bottom: 28rpx;
+}
+.step-line.active { background: #07C160; }
+
+/* ── 顶部提示区 ─────────────────────────────── */
+.hero-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16rpx 40rpx 24rpx;
+  gap: 8rpx;
+}
+.hero-emoji { font-size: 64rpx; }
+.hero-title { font-size: 36rpx; font-weight: 800; color: #1C1C1C; }
+.hero-sub   { font-size: 26rpx; color: #8C8C8C; text-align: center; line-height: 1.5; }
+
+/* ── 表单卡片 ─────────────────────────────── */
+.form-card {
+  background: white;
+  border-radius: 24rpx;
+  margin: 0 24rpx;
+  padding: 32rpx 32rpx 40rpx;
+  box-shadow: 0 2rpx 20rpx rgba(0,0,0,0.06);
+}
+
+.field {
+  margin-bottom: 28rpx;
+}
+.field-label {
+  font-size: 26rpx;
+  color: #595959;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 10rpx;
+}
+.required-star { color: #FF4D4F; }
+.field-input {
+  background: #F7F8FA;
+  border-radius: 12rpx;
+  padding: 0 24rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 28rpx;
+  color: #1C1C1C;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── 格式提示 ────────────────────────────── */
+.format-hint {
+  background: #F6FFED;
+  border: 1rpx solid #B7EB8F;
+  border-radius: 12rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 28rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.format-title { font-size: 22rpx; color: #389E0D; font-weight: 600; margin-bottom: 4rpx; }
+.format-line  { font-size: 24rpx; color: #237804; font-family: monospace; }
+
+/* ── Textarea ────────────────────────────── */
+.import-textarea {
+  background: #F7F8FA;
+  border-radius: 12rpx;
+  padding: 22rpx 24rpx;
+  font-size: 28rpx;
+  color: #1C1C1C;
+  width: 100%;
+  min-height: 240rpx;
+  box-sizing: border-box;
+  line-height: 1.8;
+}
+
+/* ── 预览 ─────────────────────────────────── */
+.preview-box {
+  background: #F0F9FF;
+  border: 1rpx solid #91D5FF;
+  border-radius: 12rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 28rpx;
+}
+.preview-title {
+  font-size: 24rpx;
+  color: #0050B3;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 12rpx;
+}
+.preview-list { display: flex; flex-direction: column; gap: 8rpx; }
+.preview-item {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+.preview-no   { font-size: 22rpx; color: #ADADAD; width: 48rpx; }
+.preview-name { font-size: 26rpx; color: #1C1C1C; }
+.preview-more { font-size: 22rpx; color: #ADADAD; margin-top: 4rpx; }
+
+/* ── 按钮 ─────────────────────────────────── */
+.primary-btn {
+  width: 100%;
+  background: #07C160;
+  color: white;
+  font-size: 30rpx;
+  font-weight: 700;
+  border-radius: 48rpx;
+  padding: 28rpx 0;
+  text-align: center;
+  border: none;
+  margin-top: 8rpx;
+}
+.primary-btn.disabled { opacity: 0.6; }
+.primary-btn::after  { border: none; }
+
+.skip-btn {
+  text-align: center;
+  padding: 28rpx 0 8rpx;
+}
+.skip-btn text {
+  font-size: 26rpx;
+  color: #ADADAD;
+}
+
+.safe-bottom { height: env(safe-area-inset-bottom); min-height: 40rpx; }

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班费账本 · 多班级架构方案</title>
+<style>
+  :root {
+    --green: #07C160;
+    --green-light: rgba(7,193,96,0.12);
+    --green-border: rgba(7,193,96,0.3);
+    --bg: #0D1117;
+    --bg2: #161B22;
+    --bg3: #21262D;
+    --border: rgba(255,255,255,0.08);
+    --text: #E6EDF3;
+    --text2: #8B949E;
+    --blue: #58A6FF;
+    --orange: #F0883E;
+    --red: #FF7B72;
+    --purple: #BC8CFF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .hero {
+    background: linear-gradient(135deg, #0D1117 0%, #161B22 50%, #0D1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -100px; right: -100px;
+    width: 400px; height: 400px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(7,193,96,0.08) 0%, transparent 70%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--green-light);
+    border: 1px solid var(--green-border);
+    color: var(--green);
+    font-size: 12px; font-weight: 600; letter-spacing: 1px;
+    padding: 4px 14px; border-radius: 20px; margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: 36px; font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #fff 0%, #8B949E 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .hero-sub { font-size: 15px; color: var(--text2); max-width: 600px; }
+  .hero-meta {
+    display: flex; gap: 24px; margin-top: 28px; flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text2);
+  }
+  .meta-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Nav */
+  .toc {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px;
+    display: flex; gap: 0; overflow-x: auto;
+  }
+  .toc a {
+    display: block; padding: 14px 20px;
+    font-size: 13px; color: var(--text2);
+    text-decoration: none; white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .toc a:hover { color: var(--text); border-color: var(--green); }
+
+  /* Main */
+  .main { max-width: 1100px; margin: 0 auto; padding: 48px; }
+
+  /* Sections */
+  .section { margin-bottom: 56px; }
+  .section-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 28px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--green-light); border: 1px solid var(--green-border);
+    color: var(--green); font-size: 14px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title { font-size: 22px; font-weight: 700; }
+  .section-desc { font-size: 14px; color: var(--text2); margin-top: 4px; }
+
+  /* Subsection */
+  h3 {
+    font-size: 16px; font-weight: 700; color: var(--text);
+    margin: 28px 0 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  h3::before {
+    content: '';
+    width: 3px; height: 16px; border-radius: 2px;
+    background: var(--green); flex-shrink: 0;
+  }
+
+  /* Code block */
+  .code-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; margin: 16px 0;
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px; color: var(--text2);
+  }
+  .code-lang { color: var(--green); font-weight: 600; font-family: monospace; }
+  pre {
+    padding: 20px;
+    font-size: 13px; line-height: 1.7;
+    font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .kw { color: var(--purple); }
+  .str { color: var(--orange); }
+  .comment { color: var(--text2); font-style: italic; }
+  .fn { color: var(--blue); }
+  .num { color: #79C0FF; }
+  .key { color: var(--green); }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+  thead th {
+    background: var(--bg3); padding: 12px 16px;
+    text-align: left; font-weight: 700; font-size: 12px;
+    color: var(--text2); letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  thead th:first-child { border-radius: 8px 0 0 0; }
+  thead th:last-child { border-radius: 0 8px 0 0; }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+  tbody tr:hover td { background: rgba(255,255,255,0.02); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 10px; border-radius: 20px;
+  }
+  .tag-green { background: rgba(7,193,96,0.15); color: var(--green); }
+  .tag-red { background: rgba(255,123,114,0.15); color: var(--red); }
+  .tag-orange { background: rgba(240,136,62,0.15); color: var(--orange); }
+  .tag-gray { background: rgba(139,148,158,0.15); color: var(--text2); }
+
+  /* Cost bars */
+  .cost-chart { display: flex; flex-direction: column; gap: 16px; margin: 20px 0; }
+  .cost-row { display: flex; align-items: center; gap: 16px; }
+  .cost-label { width: 80px; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .cost-bar-wrap {
+    flex: 1; height: 28px; background: var(--bg3);
+    border-radius: 6px; overflow: hidden; position: relative;
+  }
+  .cost-bar {
+    height: 100%; border-radius: 6px;
+    display: flex; align-items: center; padding: 0 10px;
+    font-size: 12px; font-weight: 600; color: white;
+    transition: width 0.8s ease;
+    white-space: nowrap;
+  }
+  .cost-free { background: linear-gradient(90deg, #07C160, #05A050); }
+  .cost-warn { background: linear-gradient(90deg, #F0883E, #E07028); }
+  .cost-price { width: 80px; font-size: 13px; color: var(--text2); text-align: right; flex-shrink: 0; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 32px; margin: 20px 0; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 10px; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+  .tl-item { position: relative; margin-bottom: 28px; }
+  .tl-dot {
+    position: absolute; left: -26px; top: 4px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--green); border: 3px solid var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: var(--bg);
+  }
+  .tl-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .tl-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .tl-badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 10px; border-radius: 20px; margin-top: 8px;
+    background: rgba(7,193,96,0.1); color: var(--green);
+    border: 1px solid var(--green-border);
+  }
+
+  /* Flow diagram */
+  .flow { margin: 20px 0; }
+  .flow-node {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 20px; margin-bottom: 4px;
+    font-size: 14px;
+  }
+  .flow-node.start { border-color: var(--green-border); background: var(--green-light); }
+  .flow-node.branch { margin-left: 32px; border-style: dashed; }
+  .flow-node.leaf { margin-left: 64px; font-size: 13px; color: var(--text2); }
+  .flow-arrow { text-align: center; color: var(--text2); font-size: 18px; line-height: 1.2; margin: 2px 0; }
+  .flow-label { font-size: 11px; color: var(--text2); margin-left: 8px; }
+
+  /* Work estimate */
+  .work-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin: 20px 0; }
+  .work-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+  .work-card-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .work-card-desc { font-size: 12px; color: var(--text2); margin-bottom: 12px; line-height: 1.5; }
+  .work-card-time {
+    font-size: 13px; font-weight: 700; color: var(--green);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* Info box */
+  .info-box {
+    background: rgba(88,166,255,0.06);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 10px; padding: 16px 20px;
+    font-size: 14px; color: #A5C8FF; margin: 16px 0;
+    line-height: 1.7;
+  }
+  .warning-box {
+    background: rgba(240,136,62,0.06);
+    border: 1px solid rgba(240,136,62,0.2);
+    border-radius: 10px; padding: 16px 20px;
+    font-size: 14px; color: #F5B07A; margin: 16px 0;
+    line-height: 1.7;
+  }
+  .success-box {
+    background: var(--green-light);
+    border: 1px solid var(--green-border);
+    border-radius: 10px; padding: 16px 20px;
+    font-size: 14px; color: #7DDFAB; margin: 16px 0;
+    line-height: 1.7;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 48px; text-align: center;
+    font-size: 13px; color: var(--text2);
+  }
+
+  code {
+    font-family: 'SF Mono', monospace;
+    background: var(--bg3);
+    padding: 2px 6px; border-radius: 4px;
+    font-size: 12px; color: var(--orange);
+  }
+
+  p { margin-bottom: 12px; font-size: 14px; color: var(--text2); line-height: 1.8; }
+
+  @media (max-width: 768px) {
+    .hero, .main { padding: 24px 20px; }
+    .toc { padding: 0 20px; }
+    .hero h1 { font-size: 26px; }
+    .work-items { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">产品规格文档</div>
+  <h1>班费账本 · 多班级架构方案</h1>
+  <p class="hero-sub">从单班级迁移至多班级 SaaS 架构的完整技术方案与产品规格，支持100班以内零成本运营。</p>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <div class="meta-dot" style="background:#07C160"></div>
+      当前状态：规划中，未启动
+    </div>
+    <div class="meta-item">
+      <div class="meta-dot" style="background:#F0883E"></div>
+      预计工期：约 3 周
+    </div>
+    <div class="meta-item">
+      <div class="meta-dot" style="background:#58A6FF"></div>
+      迁移风险：极低（零停机）
+    </div>
+  </div>
+</div>
+
+<nav class="toc">
+  <a href="#s1">数据模型</a>
+  <a href="#s2">入班流程</a>
+  <a href="#s3">云函数</a>
+  <a href="#s4">费用估算</a>
+  <a href="#s5">迁移策略</a>
+  <a href="#s6">开发工作量</a>
+</nav>
+
+<div class="main">
+
+  <!-- Section 1 -->
+  <div class="section" id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-title">数据模型变更</div>
+        <div class="section-desc">新增 classes 集合作为多班隔离锚点，所有集合追加 classId 字段</div>
+      </div>
+    </div>
+
+    <h3>新增核心集合：classes</h3>
+    <p>替代原来 <code>classSettings</code> 的单记录模式，每个班级一条记录，<code>classCode</code>（加入码）与 <code>setupCode</code>（认领码）分离设计。</p>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">JSON</span>
+        <span>classes 集合结构</span>
+      </div>
+      <pre>{
+  <span class="key">"_id"</span>:            <span class="str">"classId（系统自动生成，全局唯一）"</span>,
+  <span class="key">"classCode"</span>:      <span class="str">"A3B2C1"</span>,      <span class="comment">// 6位加入码，家长用来加入班级（长期有效）</span>
+  <span class="key">"setupCode"</span>:      <span class="str">"Happy2026"</span>,   <span class="comment">// 认领主席码，用完即清空（一次性）</span>
+  <span class="key">"className"</span>:      <span class="str">"四年级三班"</span>,
+  <span class="key">"school"</span>:         <span class="str">"竹园小学"</span>,
+  <span class="key">"yearTerm"</span>:       <span class="str">"2026-2027"</span>,
+  <span class="key">"feePerStudent"</span>:  <span class="num">200</span>,
+  <span class="key">"totalStudents"</span>:  <span class="num">34</span>,
+  <span class="key">"status"</span>:         <span class="str">"active"</span>         <span class="comment">// "active" | "archived"</span>
+}</pre>
+    </div>
+
+    <h3>所有集合添加 classId 字段</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>集合</th>
+            <th>变更</th>
+            <th>说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>users</code></td><td><span class="tag tag-orange">添加 classId</span></td><td>用户归属班级</td></tr>
+          <tr><td><code>classAdmins</code></td><td><span class="tag tag-orange">添加 classId</span></td><td>角色绑定到班级</td></tr>
+          <tr><td><code>classMembers</code></td><td><span class="tag tag-orange">添加 classId</span></td><td>花名册归属班级</td></tr>
+          <tr><td><code>incomes</code></td><td><span class="tag tag-orange">添加 classId</span></td><td>收入记录归属</td></tr>
+          <tr><td><code>expenses</code></td><td><span class="tag tag-orange">添加 classId</span></td><td>支出记录归属</td></tr>
+          <tr><td><code>feeSubmissions</code></td><td><span class="tag tag-orange">添加 classId</span></td><td>缴费申请归属</td></tr>
+          <tr><td><code>specialFunds</code></td><td><span class="tag tag-orange">添加 classId</span></td><td>专项资金归属</td></tr>
+          <tr><td><code>classSettings</code></td><td><span class="tag tag-red">废弃</span></td><td>数据迁移至 classes 集合</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-box">
+      💡 <strong>设计原则</strong>：classId 字段由云函数从 users 集合读取，前端不传入 classId 参数，防止越权访问其他班级数据。
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="section" id="s2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div>
+        <div class="section-title">入班流程变更</div>
+        <div class="section-desc">已绑定班级的用户体验完全不变；新用户引导页新增创建/加入两个路径</div>
+      </div>
+    </div>
+
+    <h3>新用户入班流程</h3>
+    <div class="flow">
+      <div class="flow-node start">📱 打开小程序</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node">已绑定班级？</div>
+      <div class="flow-node branch">✅ 是 → 直接进入首页（与现在完全相同体验）</div>
+      <div class="flow-node branch">❌ 否 → 显示引导页</div>
+      <div class="flow-node leaf">📋 加入班级：输入/扫描6位加入码 → 确认班级名称 → 进入</div>
+      <div class="flow-node leaf">🏫 创建班级：填写班级信息 → 系统生成加入码和认领码</div>
+    </div>
+
+    <h3>认领主席角色</h3>
+    <div class="flow">
+      <div class="flow-node">已入班的用户，在个人中心额外输入 setupCode</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node">验证通过 → 角色变为 chair → setupCode 立即清空（一次性）</div>
+    </div>
+
+    <div class="warning-box">
+      ⚠️ <strong>加入错误班级怎么办？</strong>加入时展示班级名称确认弹窗；用户可在「我的」→「重新加入班级」输入新的加入码切换班级。切换后旧班级数据对其不可见，但历史记录保留在数据库中。
+    </div>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="section" id="s3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div>
+        <div class="section-title">云函数核心变更</div>
+        <div class="section-desc">引入 getCallerClassId 安全层，所有查询基于此值过滤</div>
+      </div>
+    </div>
+
+    <h3>核心安全函数</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">JavaScript</span>
+        <span>所有云函数复用此工具函数</span>
+      </div>
+      <pre><span class="comment">// 从调用者 openid 获取所属班级 ID，不信任前端传入的 classId</span>
+<span class="kw">async function</span> <span class="fn">getCallerClassId</span>(db, openid) {
+  <span class="kw">const</span> res = <span class="kw">await</span> db.collection(<span class="str">'users'</span>).doc(openid).get()
+  <span class="kw">if</span> (!res.data) <span class="kw">throw new</span> Error(<span class="str">'USER_NOT_FOUND'</span>)
+  <span class="kw">if</span> (!res.data.classId) <span class="kw">throw new</span> Error(<span class="str">'USER_NOT_IN_CLASS'</span>)
+  <span class="kw">return</span> res.data.classId
+}
+
+<span class="comment">// 使用示例：所有云函数开头统一调用</span>
+exports.main = <span class="kw">async</span> (event) => {
+  <span class="kw">const</span> { OPENID } = cloud.getWXContext()
+  <span class="kw">const</span> classId = <span class="kw">await</span> <span class="fn">getCallerClassId</span>(db, OPENID)
+
+  <span class="comment">// 后续所有查询带上 classId 过滤</span>
+  <span class="kw">const</span> incomes = <span class="kw">await</span> db.collection(<span class="str">'incomes'</span>)
+    .where({ classId, yearTerm })
+    .get()
+}</pre>
+    </div>
+
+    <h3>需要修改的云函数</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>云函数</th><th>变更内容</th><th>工作量</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>getRole</code></td><td>查 classAdmins 加 classId 过滤，返回值新增 classId 和 classInfo</td><td><span class="tag tag-green">小</span></td></tr>
+          <tr><td><code>getUserList</code></td><td>所有 action 的查询加 classId 过滤，约20处</td><td><span class="tag tag-orange">中</span></td></tr>
+          <tr><td><code>confirmFeeSubmission</code></td><td>验证 submission.classId 与操作者 classId 一致</td><td><span class="tag tag-green">小</span></td></tr>
+          <tr><td><code>importMembers</code></td><td>导入时注入 classId，查询加 classId 过滤</td><td><span class="tag tag-green">小</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>新增云函数</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>函数名</th><th>用途</th><th>权限</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>createClass</code></td><td>创建班级，生成 classCode 和 setupCode</td><td>任何已登录用户</td></tr>
+          <tr><td><code>joinClass</code></td><td>通过 classCode 加入班级，更新 users.classId</td><td>任何已登录用户</td></tr>
+          <tr><td><code>claimChair</code></td><td>通过 setupCode 认领主席角色，写入 classAdmins，清空 setupCode</td><td>已入班用户</td></tr>
+          <tr><td><code>getClassInfo</code></td><td>获取当前用户的班级基本信息（供前端缓存）</td><td>已入班用户</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 4 -->
+  <div class="section" id="s4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div>
+        <div class="section-title">费用估算</div>
+        <div class="section-desc">基于微信云开发免费额度：云函数20万次/月，数据库读150万次/月</div>
+      </div>
+    </div>
+
+    <h3>各规模月度费用</h3>
+    <div class="cost-chart">
+      <div class="cost-row">
+        <div class="cost-label">10 班</div>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar cost-free" style="width:4%">6,000次</div>
+        </div>
+        <div class="cost-price" style="color:#07C160">¥0</div>
+      </div>
+      <div class="cost-row">
+        <div class="cost-label">100 班</div>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar cost-free" style="width:20%">6万次</div>
+        </div>
+        <div class="cost-price" style="color:#07C160">¥0</div>
+      </div>
+      <div class="cost-row">
+        <div class="cost-label">300 班</div>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar cost-free" style="width:60%">18万次（接近上限）</div>
+        </div>
+        <div class="cost-price" style="color:#F0883E">¥0~20</div>
+      </div>
+      <div class="cost-row">
+        <div class="cost-label">500 班</div>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar cost-warn" style="width:100%">30万次（超出免费额度）</div>
+        </div>
+        <div class="cost-price" style="color:#FF7B72">¥20~50</div>
+      </div>
+    </div>
+
+    <div class="success-box">
+      ✅ <strong>结论：100个班以内完全在免费额度内，月费用 ¥0。</strong>超过300班时考虑升级至基础付费套餐（¥19.9/月），可支撑数千班级。
+    </div>
+
+    <h3>单班级月度用量明细</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>操作类型</th><th>频次估算</th><th>月读次数</th><th>月写次数</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>家长查看账本</td><td>50人×20次/月</td><td>2,000</td><td>0</td></tr>
+          <tr><td>缴费记录查询</td><td>50人×10次/月</td><td>500</td><td>0</td></tr>
+          <tr><td>家委会管理操作</td><td>3人×30次/月</td><td>270</td><td>90</td></tr>
+          <tr><td>缴费确认/新增支出</td><td>约30次/月</td><td>60</td><td>60</td></tr>
+          <tr><td colspan="2"><strong>单班合计</strong></td><td><strong>~3,000次</strong></td><td><strong>~200次</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 5 -->
+  <div class="section" id="s5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div>
+        <div class="section-title">迁移策略（零停机）</div>
+        <div class="section-desc">全程增量操作，旧版本在迁移期间仍可正常使用，可随时回滚</div>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot">1</div>
+        <div class="tl-title">创建 classes 集合记录</div>
+        <div class="tl-desc">在 <code>classes</code> 集合创建一条记录，代表现有的唯一班级。将原 <code>classSettings</code> 的数据（className, yearTerm, feePerStudent 等）迁移过来，记录生成的 <code>LEGACY_CLASS_ID</code>。</div>
+        <div class="tl-badge">纯增量，不影响线上</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">2</div>
+        <div class="tl-title">批量为所有现有记录添加 classId</div>
+        <div class="tl-desc">遍历 users、classAdmins、classMembers、incomes、expenses、feeSubmissions、specialFunds 共7个集合，为每条记录添加 <code>classId = LEGACY_CLASS_ID</code>。分页处理，每批20条，避免超时。</div>
+        <div class="tl-badge">约30分钟完成，线上不中断</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">3</div>
+        <div class="tl-title">发布新版小程序</div>
+        <div class="tl-desc">新版云函数引入 <code>getCallerClassId</code> 安全层。老用户首次打开时，若 <code>users.classId</code> 为空（迁移期兜底），自动关联到 <code>LEGACY_CLASS_ID</code>，无感知升级。</div>
+        <div class="tl-badge">提交审核，等待1-3工作日</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">4</div>
+        <div class="tl-title">验证与清理</div>
+        <div class="tl-desc">确认所有集合的 <code>classId</code> 字段已全部填充，验证现有用户正常使用。观察1周后，将旧 <code>classSettings</code> 集合归档（保留备份，不删除）。</div>
+        <div class="tl-badge">完成迁移</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      🔄 <strong>回滚方案</strong>：Step 1-2 是纯增量操作（只新增字段，不修改现有数据），可随时暂停。旧版小程序（无 classId 逻辑）在迁移期间仍可完全正常使用，通过微信小程序版本管理可一键回滚。
+    </div>
+  </div>
+
+  <!-- Section 6 -->
+  <div class="section" id="s6">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <div>
+        <div class="section-title">开发工作量估算</div>
+        <div class="section-desc">约 3 周，现有功能页面无需重写，仅追加 classId 过滤</div>
+      </div>
+    </div>
+
+    <div class="work-items">
+      <div class="work-card">
+        <div class="work-card-title">☁️ 云函数重构</div>
+        <div class="work-card-desc">4个现有云函数加 classId 过滤，新增4个云函数（createClass, joinClass, claimChair, getClassInfo）</div>
+        <div class="work-card-time">⏱ 2 周</div>
+      </div>
+      <div class="work-card">
+        <div class="work-card-title">📱 新增引导页</div>
+        <div class="work-card-desc">班级创建页面、加入班级页面，包含二维码扫描功能</div>
+        <div class="work-card-time">⏱ 3 天</div>
+      </div>
+      <div class="work-card">
+        <div class="work-card-title">🔧 现有页面改造</div>
+        <div class="work-card-desc">其他页面（账本、收支、成员管理等）无需改动，classId 在云函数层过滤</div>
+        <div class="work-card-time">⏱ 0</div>
+      </div>
+      <div class="work-card">
+        <div class="work-card-title">🧪 权限隔离测试</div>
+        <div class="work-card-desc">验证不同班级用户无法访问对方数据，权限边界测试</div>
+        <div class="work-card-time">⏱ 1 周</div>
+      </div>
+      <div class="work-card">
+        <div class="work-card-title">🔄 数据迁移执行</div>
+        <div class="work-card-desc">运行迁移脚本，验证现有用户数据完整迁移</div>
+        <div class="work-card-time">⏱ 半天</div>
+      </div>
+      <div class="work-card" style="border-color: var(--green-border); background: var(--green-light)">
+        <div class="work-card-title">📅 总计</div>
+        <div class="work-card-desc">从当前单班级版本，平滑升级至多班级 SaaS 架构</div>
+        <div class="work-card-time" style="font-size:18px">⏱ 约 3 周</div>
+      </div>
+    </div>
+
+    <h3>不变 vs 根本变化</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>维度</th><th>不变</th><th>根本变化</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>核心功能</td><td>收支记录、缴费确认、名单管理</td><td>首次入班流程</td></tr>
+          <tr><td>界面结构</td><td>主页、明细页面布局</td><td>新增班级创建/加入引导页</td></tr>
+          <tr><td>角色权限</td><td>chair/cashier/parent 权限逻辑</td><td>权限绑定到班级而非全局</td></tr>
+          <tr><td>数据操作</td><td>增删改查逻辑</td><td>所有查询加 classId 过滤</td></tr>
+          <tr><td>安全模型</td><td>基于 openid 的认证</td><td>新增 classId 数据隔离层</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  班费账本 · 多班级架构方案 · 文档版本 1.0 · 2026年8月 · 现有代码无需改动，此方案仅作规划参考
+</footer>
+
+</body>
+</html>

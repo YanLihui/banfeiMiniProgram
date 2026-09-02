@@ -1,0 +1,9 @@
+{
+  "name": "getUserList",
+  "version": "1.0.0",
+  "description": "读取全部用户及角色列表",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

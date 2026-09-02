@@ -1,0 +1,276 @@
+<!-- pages/index/index.wxml -->
+<view class="container">
+
+  <!-- ══ 无权限拦截 ══════════════════════════ -->
+  <view wx:if="{{blocked}}" class="blocked-screen">
+    <text class="blocked-icon">🔒</text>
+    <text class="blocked-title">暂无访问权限</text>
+    <text class="blocked-sub">您的孩子不在本班花名册中，如有疑问请联系家委会</text>
+  </view>
+
+  <!-- ══ 正常内容 ═══════════════════════════ -->
+  <block wx:else>
+
+  <!-- ══ 顶部英雄区（绿色渐变） ══════════════ -->
+  <view class="hero">
+    <view style="height: {{statusBarHeight}}px"></view>
+    <view class="nav-bar">
+      <view class="nav-left">
+        <text class="nav-class">{{className}}</text>
+        <view class="nav-term-row" bindtap="pickYearTerm">
+          <text class="nav-term">{{yearTerm}} 学年</text>
+          <text class="nav-term-arrow">▾</text>
+        </view>
+      </view>
+      <view class="nav-bell">🔔</view>
+    </view>
+
+    <!-- 历史学年提示条 -->
+    <view wx:if="{{isHistoricalView}}" class="history-bar" bindtap="pickYearTerm">
+      <text class="history-bar-text">📅 正在查看 {{yearTerm}} 学年历史数据</text>
+      <text class="history-bar-btn">切换 ▾</text>
+    </view>
+    <view class="balance-area">
+      <view class="balance-split-row">
+        <view class="balance-split-item">
+          <text class="balance-label">班费余额（元）</text>
+          <view class="balance-row">
+            <text class="balance-symbol">¥</text>
+            <text class="balance-value">{{generalBalanceStr}}</text>
+          </view>
+        </view>
+        <view class="balance-vdivider"></view>
+        <view class="balance-split-item">
+          <text class="balance-label">专项余额（元）</text>
+          <view class="balance-row">
+            <text class="balance-symbol">¥</text>
+            <text class="balance-value">{{fundBalanceStr}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="stats-row">
+      <view class="stat-cell" bindtap="goToDetail" data-tab="income">
+        <text class="stat-label">班费收入</text>
+        <text class="stat-value">¥{{generalIncomeStr}}</text>
+        <text class="stat-sub">{{collectedCount}} 人</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-cell" bindtap="goToDetail" data-tab="expense">
+        <text class="stat-label">班费支出</text>
+        <text class="stat-value">¥{{generalExpenseStr}}</text>
+        <text class="stat-sub">{{generalExpenseCount}} 笔</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-cell" bindtap="goToDetail" data-tab="fund">
+        <text class="stat-label">专项收入</text>
+        <text class="stat-value">¥{{fundIncomeStr}}</text>
+        <text class="stat-sub">{{fundIncomeCount}} 笔</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-cell" bindtap="goToDetail" data-tab="fund">
+        <text class="stat-label">专项支出</text>
+        <text class="stat-value">¥{{fundExpenseStr}}</text>
+        <text class="stat-sub">{{fundExpenseCount}} 笔</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ══ 缴费横幅（当前学年显示） ══════════════ -->
+  <!-- 未绑定孩子姓名时提示去绑定 -->
+  <view wx:if="{{!isHistoricalView && payStatus === 'unknown' && yearTerm}}" class="pay-banner unpaid" bindtap="goToProfile">
+    <view class="pay-banner-left">
+      <text class="pay-banner-title">请先绑定孩子姓名</text>
+      <text class="pay-banner-sub">点此前往「我的」→「编辑」，选择孩子后可登记缴费</text>
+    </view>
+    <view class="pay-banner-btn">去绑定</view>
+  </view>
+  <view
+    wx:if="{{!isHistoricalView && payStatus === 'unpaid'}}"
+    class="pay-banner unpaid"
+    bindtap="submitClaim"
+  >
+    <view class="pay-banner-left">
+      <text class="pay-banner-title">本学年班费未缴 · ¥{{feePerStudent}}</text>
+      <text class="pay-banner-sub">扫群内二维码转账后，点此一键登记</text>
+    </view>
+    <view class="pay-banner-btn {{submittingClaim ? 'disabled' : ''}}">
+      {{submittingClaim ? '提交中' : '我已转账'}}
+    </view>
+  </view>
+  <view wx:elif="{{!isHistoricalView && payStatus === 'pending'}}" class="pay-banner pending">
+    <text class="pay-banner-icon">⏳</text>
+    <view class="pay-banner-left">
+      <text class="pay-banner-title">缴费登记已提交</text>
+      <text class="pay-banner-sub">等待出纳确认中</text>
+    </view>
+  </view>
+  <view wx:elif="{{!isHistoricalView && payStatus === 'paid'}}" class="pay-banner paid">
+    <text class="pay-banner-icon">✅</text>
+    <text class="pay-banner-title">本学年班费已缴</text>
+  </view>
+
+  <!-- ══ 花名册未导入提示（仅主任可见） ════════ -->
+  <view wx:if="{{isChair && rosterEmpty}}" class="roster-tip" bindtap="goToMembers">
+    <text class="roster-tip-icon">📋</text>
+    <view class="roster-tip-body">
+      <text class="roster-tip-title">花名册未导入</text>
+      <text class="roster-tip-sub">点此前往成员管理，导入全班花名册</text>
+    </view>
+    <text class="roster-tip-arrow">›</text>
+  </view>
+
+  <!-- ══ 收费进度条 ════════════════════════ -->
+  <view class="section-card progress-card">
+    <view class="progress-header">
+      <text class="section-title">🏫 收费进度</text>
+      <text class="progress-count text-green">{{collectedCount}} / {{totalStudents}} 人</text>
+    </view>
+    <progress percent="{{collectionPercent}}" stroke-width="8"
+      activeColor="#07C160" backgroundColor="#F0F0F0" active active-mode="forwards" />
+    <view class="progress-footer">
+      <text class="text-gray text-sm">每人 ¥{{feePerStudent}} · 已收 ¥{{generalIncomeStr}}</text>
+      <text class="text-gray text-sm">待收 {{pendingCount}} 人</text>
+    </view>
+  </view>
+
+  <!-- ══ 快捷操作按钮 ══════════════════════ -->
+  <view class="section-card quick-actions">
+    <!-- 出纳/会计：录入收费（accountant 无此权限） -->
+    <view wx:if="{{isCashier}}" class="action-btn" bindtap="goToCollect">
+      <view class="action-icon green">💰</view>
+      <text class="action-label">录入收费</text>
+    </view>
+    <!-- 出纳/会计/主任：确认缴费（accountant 无此权限） -->
+    <view wx:if="{{isCashier || isChair}}" class="action-btn" bindtap="goToConfirm">
+      <view class="action-icon orange">✅</view>
+      <text class="action-label">确认缴费</text>
+    </view>
+    <!-- 家委主任：成员管理 / 角色管理 -->
+    <view wx:if="{{isChair}}" class="action-btn" bindtap="goToMembers">
+      <view class="action-icon blue">👥</view>
+      <text class="action-label">成员管理</text>
+    </view>
+    <view wx:if="{{isChair}}" class="action-btn" bindtap="goToRoles">
+      <view class="action-icon orange">🎖️</view>
+      <text class="action-label">角色管理</text>
+    </view>
+    <!-- 所有家委成员：添加支出 -->
+    <view wx:if="{{isCommittee}}" class="action-btn" bindtap="goToAdd">
+      <view class="action-icon orange">📝</view>
+      <text class="action-label">添加支出</text>
+    </view>
+    <!-- 主任 + 出纳/会计：账目报告 / 新学期 -->
+    <view wx:if="{{isChair || isFinance}}" class="action-btn" bindtap="goToReport">
+      <view class="action-icon teal">📋</view>
+      <text class="action-label">账目报告</text>
+    </view>
+    <view wx:if="{{isChair || isFinance}}" class="action-btn" bindtap="goToNewTerm">
+      <view class="action-icon green">🔄</view>
+      <text class="action-label">新学期</text>
+    </view>
+    <!-- 全员：收支报告 -->
+    <view class="action-btn" bindtap="goToDetail">
+      <view class="action-icon blue">📊</view>
+      <text class="action-label">收支报告</text>
+    </view>
+    <!-- 仅家长（parent）：缴费名单（只读） -->
+    <view wx:if="{{!isCommittee}}" class="action-btn" bindtap="goToMembers">
+      <view class="action-icon green">📋</view>
+      <text class="action-label">缴费名单</text>
+    </view>
+    <!-- 非委员（家长）：个人中心 -->
+    <view wx:if="{{!isCommittee}}" class="action-btn" bindtap="goToProfile">
+      <view class="action-icon gray">👤</view>
+      <text class="action-label">个人中心</text>
+    </view>
+  </view>
+
+  <!-- ══ 最近记录 ══════════════════════════ -->
+  <view class="section-header">
+    <text class="section-title">最近记录</text>
+    <text class="section-more" bindtap="goToDetail">全部 →</text>
+  </view>
+
+  <view class="section-card tx-list">
+    <!-- 加载中 -->
+    <view wx:if="{{loading}}" class="loading-wrap">
+      <loading></loading>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:elif="{{recentRecords.length === 0}}" class="empty-state">
+      <text style="font-size: 60rpx">📭</text>
+      <text>暂无记录，快去添加第一笔吧</text>
+    </view>
+
+    <!-- 列表 -->
+    <block wx:else>
+      <view
+        class="tx-item"
+        wx:for="{{recentRecords}}"
+        wx:key="_id"
+        bindtap="viewRecord"
+        data-id="{{item._id}}"
+        data-type="{{item.recordType}}"
+      >
+        <view class="tx-icon-wrap {{item.iconBg}}">
+          <text class="tx-icon">{{item.icon}}</text>
+        </view>
+        <view class="tx-body">
+          <text class="tx-name">{{item.displayName}}</text>
+          <view class="tx-meta">
+            <text class="tx-date">{{item.displayDate}}</text>
+            <view wx:if="{{item.receiptsCount > 0}}" class="receipt-badge">
+              📎 凭证 {{item.receiptsCount}} 张
+            </view>
+          </view>
+        </view>
+        <view class="tx-right">
+          <text class="tx-amount {{item.recordType}}">{{item.amountStr}}</text>
+          <view wx:if="{{item.recordType === 'expense' && item.reimbursementStatus === 'unreimbursed'}}" class="tag-unreimbursed">未报销</view>
+          <view wx:elif="{{item.recordType === 'expense' && item.reimbursementStatus === 'reimbursed'}}" class="tag-reimbursed">已报销</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- ══ 公告栏 ════════════════════════════ -->
+  <view wx:if="{{notice || isChair}}" class="notice-card {{isChair ? 'notice-editable' : ''}}" bindlongpress="onNoticeLongPress">
+    <text class="notice-icon">📢</text>
+    <view style="flex:1">
+      <text wx:if="{{notice}}" class="notice-text">{{notice}}</text>
+      <text wx:else class="notice-text" style="color:#ADADAD">长按添加班级公告...</text>
+    </view>
+    <text wx:if="{{isChair}}" class="notice-edit-hint">长按编辑</text>
+  </view>
+
+  <!-- 底部间距 -->
+  <view style="height: 40rpx"></view>
+  <view class="safe-bottom"></view>
+
+  </block><!-- end wx:else -->
+</view>
+
+<!-- ══ 公告编辑弹窗 ════════════════════════════ -->
+<view wx:if="{{showNoticeEditor}}" class="notice-editor-mask" bindtap="closeNoticeEditor">
+  <view class="notice-editor-card" catchtap="noop">
+    <text class="notice-editor-title">修改班级公告</text>
+    <textarea
+      class="notice-editor-textarea"
+      placeholder="输入公告内容（留空则隐藏公告栏）"
+      value="{{noticeInput}}"
+      bindinput="onNoticeInput"
+      maxlength="200"
+      focus="{{showNoticeEditor}}"
+      adjust-position="{{true}}"
+    />
+    <text class="notice-editor-count">{{noticeInput.length}}/200</text>
+    <view class="notice-editor-btns">
+      <view class="notice-editor-btn cancel" bindtap="closeNoticeEditor">取消</view>
+      <view class="notice-editor-btn confirm {{noticeSaving ? 'disabled' : ''}}" bindtap="saveNotice">
+        {{noticeSaving ? '保存中...' : '保存'}}
+      </view>
+    </view>
+  </view>
+</view>

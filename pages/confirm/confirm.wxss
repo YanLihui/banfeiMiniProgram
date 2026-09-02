@@ -1,0 +1,259 @@
+/* pages/confirm/confirm.wxss */
+
+.fund-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #FFF3E0;
+  color: #FF8C00;
+  font-size: 20rpx;
+  font-weight: 600;
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+  margin-right: 8rpx;
+}
+
+/* ══ Tab 切换 ══════════════════════════════════ */
+.tab-bar {
+  display: flex;
+  background: white;
+  margin: 24rpx 24rpx 0;
+  border-radius: 20rpx;
+  padding: 8rpx;
+  gap: 8rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+.tab-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  font-size: 28rpx;
+  color: #8C8C8C;
+  padding: 16rpx 0;
+  border-radius: 14rpx;
+}
+.tab-item.active {
+  background: #07C160;
+  color: white;
+  font-weight: 700;
+}
+.tab-badge {
+  background: #FF4D4F;
+  color: white;
+  font-size: 20rpx;
+  min-width: 36rpx;
+  height: 36rpx;
+  border-radius: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8rpx;
+}
+.tab-item.active .tab-badge { background: rgba(255,255,255,0.35); }
+
+/* ══ 顶部统计条 ════════════════════════════════ */
+.summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  margin: 16rpx 24rpx 0;
+  border-radius: 24rpx;
+  padding: 28rpx 32rpx;
+  box-shadow: 0 2rpx 20rpx rgba(0,0,0,0.06);
+}
+.summary-left {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+}
+.summary-count { font-size: 64rpx; font-weight: 900; color: #FA8C16; letter-spacing: -2rpx; line-height: 1; }
+.summary-count.orange { color: #FA8C16; }
+.summary-label { font-size: 26rpx; color: #8C8C8C; }
+.batch-btn {
+  background: #07C160; color: white;
+  font-size: 28rpx; font-weight: 600;
+  padding: 16rpx 40rpx; border-radius: 40rpx;
+}
+
+/* ══ 列表卡片 ══════════════════════════════════ */
+.list-card {
+  background: white;
+  border-radius: 24rpx;
+  margin: 16rpx 24rpx 0;
+  box-shadow: 0 2rpx 20rpx rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+.claim-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  gap: 20rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+.claim-item:last-child { border-bottom: none; }
+.expense-claim { align-items: flex-start; }
+
+.claim-avatar {
+  width: 80rpx; height: 80rpx;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.claim-avatar.payment { background: #FFF7E6; }
+.claim-avatar.expense  { background: #FFF0F6; border-radius: 20rpx; }
+.claim-initial    { font-size: 32rpx; font-weight: 700; color: #FA8C16; }
+.claim-cat-icon   { font-size: 40rpx; }
+
+.claim-info { flex: 1; min-width: 0; }
+.claim-name-row { display: flex; align-items: center; gap: 12rpx; flex-wrap: wrap; }
+.claim-name   { font-size: 30rpx; font-weight: 600; color: #1C1C1C; }
+.claim-parent { font-size: 22rpx; color: #ADADAD; }
+.claim-meta   { display: flex; align-items: center; gap: 16rpx; margin-top: 8rpx; }
+.claim-amount       { font-size: 28rpx; font-weight: 800; }
+.claim-amount.green { color: #07C160; }
+.claim-amount.red   { color: #FF4D4F; }
+.claim-time   { font-size: 22rpx; color: #BFBFBF; }
+.claim-notes  { font-size: 22rpx; color: #8C8C8C; display: block; margin-top: 6rpx; }
+.receipt-hint { font-size: 22rpx; color: #ADADAD; margin-top: 6rpx; }
+
+/* 操作按钮 */
+.confirm-btn {
+  font-size: 24rpx; font-weight: 600;
+  padding: 12rpx 24rpx; border-radius: 20rpx; flex-shrink: 0;
+}
+.confirm-btn.green { background: #E7F9EF; color: #07C160; }
+.confirm-btn.gray  { background: #F5F5F5; color: #8C8C8C; }
+
+.expense-actions { display: flex; flex-direction: column; gap: 12rpx; flex-shrink: 0; }
+
+/* ══ 底部提示 / 空状态 / 加载 ════════════════ */
+.bottom-tip  { text-align: center; padding: 24rpx; }
+.tip-text    { font-size: 22rpx; color: #BFBFBF; }
+.loading-wrap { display: flex; justify-content: center; padding: 80rpx 0; }
+
+.summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  margin: 24rpx 24rpx 0;
+  border-radius: 24rpx;
+  padding: 28rpx 32rpx;
+  box-shadow: 0 2rpx 20rpx rgba(0,0,0,0.06);
+}
+.summary-left {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+}
+.summary-count {
+  font-size: 64rpx;
+  font-weight: 900;
+  color: #FA8C16;
+  letter-spacing: -2rpx;
+  line-height: 1;
+}
+.summary-label {
+  font-size: 26rpx;
+  color: #8C8C8C;
+}
+.batch-btn {
+  background: #07C160;
+  color: white;
+  font-size: 28rpx;
+  font-weight: 600;
+  padding: 16rpx 40rpx;
+  border-radius: 40rpx;
+}
+
+/* ══ 列表卡片 ══════════════════════════════════ */
+.list-card {
+  background: white;
+  border-radius: 24rpx;
+  margin: 16rpx 24rpx 0;
+  box-shadow: 0 2rpx 20rpx rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+/* ══ 单条申请 ══════════════════════════════════ */
+.claim-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  gap: 20rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+.claim-item:last-child { border-bottom: none; }
+
+.claim-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #FFF7E6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.claim-initial {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #FA8C16;
+}
+
+.claim-info { flex: 1; min-width: 0; }
+.claim-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+.claim-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1C1C1C;
+}
+.claim-parent {
+  font-size: 22rpx;
+  color: #ADADAD;
+}
+.claim-meta {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 8rpx;
+}
+.claim-amount {
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #07C160;
+}
+.claim-time {
+  font-size: 22rpx;
+  color: #BFBFBF;
+}
+
+.confirm-btn {
+  background: #E7F9EF;
+  color: #07C160;
+  font-size: 26rpx;
+  font-weight: 700;
+  padding: 14rpx 28rpx;
+  border-radius: 20rpx;
+  flex-shrink: 0;
+}
+
+/* ══ 底部提示 ══════════════════════════════════ */
+.bottom-tip {
+  text-align: center;
+  padding: 24rpx;
+}
+.tip-text { font-size: 22rpx; color: #BFBFBF; }
+
+.loading-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 80rpx 0;
+}

@@ -1,0 +1,54 @@
+<!-- pages/confirm/confirm.wxml -->
+<view class="container">
+
+  <view class="summary-bar">
+    <view class="summary-left">
+      <text class="summary-count">{{paymentList.length}}</text>
+      <text class="summary-label">条待确认</text>
+    </view>
+    <view wx:if="{{paymentList.length > 0}}" class="batch-btn" bindtap="confirmAllPayments">
+      全部确认
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-wrap"><loading></loading></view>
+  <view wx:elif="{{paymentList.length === 0}}" class="empty-state">
+    <text style="font-size:60rpx">🎉</text>
+    <text>暂无待确认缴费</text>
+  </view>
+  <view wx:else class="list-card">
+    <view
+      class="claim-item"
+      wx:for="{{paymentList}}"
+      wx:key="_id"
+      bindtap="confirmOnePayment"
+      data-id="{{item._id}}"
+      data-childname="{{item.childName}}"
+      data-payername="{{item.payerName}}"
+      data-amount="{{item.amountStr}}"
+    >
+      <view class="claim-avatar payment">
+        <text class="claim-initial">{{item.initial}}</text>
+      </view>
+      <view class="claim-info">
+        <view class="claim-name-row">
+          <text class="claim-name">{{item.childName || '未知'}}</text>
+          <text class="claim-parent" wx:if="{{item.payerName}}">家长：{{item.payerName}}</text>
+        </view>
+        <view class="claim-meta">
+          <text class="claim-amount green">¥{{item.amountStr}}</text>
+          <view wx:if="{{item.fundName}}" class="fund-badge">【{{item.fundName}}】</view>
+          <text class="claim-time">{{item.timeStr}} 申请</text>
+        </view>
+      </view>
+      <view class="confirm-btn green">入账</view>
+    </view>
+  </view>
+
+  <view class="bottom-tip">
+    <text class="tip-text">点击"入账"直接记录收款，无需二次确认</text>
+  </view>
+
+  <view style="height:40rpx"></view>
+  <view class="safe-bottom"></view>
+</view>

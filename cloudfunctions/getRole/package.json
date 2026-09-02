@@ -1,0 +1,9 @@
+{
+  "name": "getRole",
+  "version": "1.0.0",
+  "description": "获取用户 openid 和管理员角色",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

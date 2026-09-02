@@ -1,0 +1,9 @@
+{
+  "name": "confirmClaim",
+  "version": "1.0.0",
+  "description": "出纳确认家长缴费申请",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

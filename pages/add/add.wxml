@@ -1,0 +1,174 @@
+<!-- pages/add/add.wxml -->
+<!-- 仅家委会可进入此页，添加支出或收费记录 -->
+<view class="container">
+
+  <!-- ══ 专项基金横幅 ════════════════════════════ -->
+  <view wx:if="{{fundId}}" class="fund-banner">
+    <text class="fund-banner-icon">🎯</text>
+    <text class="fund-banner-text">专项活动：{{fundName}}</text>
+  </view>
+
+  <!-- ══ 类型切换（无专项时显示） ══════════════════ -->
+  <view wx:if="{{!fundId}}" class="type-toggle">
+    <view class="toggle-item {{type === 'expense' ? 'active-expense' : ''}}" bindtap="setType" data-type="expense">支出</view>
+    <view class="toggle-item {{type === 'income'  ? 'active-income'  : ''}}" bindtap="setType" data-type="income">收费</view>
+  </view>
+  <view class="amount-block">
+    <text class="amount-label">{{type === 'expense' ? '本次支出金额' : '收费金额'}}（元）</text>
+    <view class="amount-row">
+      <text class="amount-symbol">¥</text>
+      <input
+        class="amount-input {{type}}"
+        type="digit"
+        placeholder="0.00"
+        placeholder-style="color:#E0E0E0;font-size:40rpx;"
+        value="{{form.amount}}"
+        bindinput="onAmountInput"
+        focus="{{true}}"
+      />
+    </view>
+  </view>
+
+  <!-- ══ 支出表单 ════════════════════════════ -->
+  <view wx:if="{{type === 'expense'}}" class="form-section">
+
+    <view class="form-group">
+      <view class="form-row">
+        <text class="fr-label">事项名称</text>
+        <input class="fr-input" placeholder="如：六一儿童节礼品采购" value="{{form.title}}" bindinput="onInput" data-field="title" />
+      </view>
+      <view class="form-row">
+        <text class="fr-label">垫付人 <text style="color:#FF4D4F">*</text></text>
+        <input class="fr-input" placeholder="谁垫付了这笔钱" value="{{form.advancer}}" bindinput="onInput" data-field="advancer" />
+      </view>
+      <view class="form-row" bindtap="pickDate">
+        <text class="fr-label">支出日期</text>
+        <text class="fr-val {{form.date ? '' : 'ph'}}">{{form.date || '选择日期'}}</text>
+        <text class="fr-arrow">›</text>
+      </view>
+      <view class="form-row" bindtap="pickEvent">
+        <text class="fr-label">关联活动</text>
+        <text class="fr-val {{form.eventName ? '' : 'ph'}}">{{form.eventName || '选择活动（可选）'}}</text>
+        <text class="fr-arrow">›</text>
+      </view>
+      <view class="form-row" style="align-items: flex-start">
+        <text class="fr-label" style="padding-top: 4rpx">备注说明</text>
+        <textarea
+          class="fr-textarea"
+          placeholder="输入备注（可选）"
+          value="{{form.notes}}"
+          bindinput="onInput"
+          data-field="notes"
+          auto-height
+          maxlength="200"
+        />
+      </view>
+    </view>
+
+    <!-- 支出类目 -->
+    <view class="form-group">
+      <view style="padding: 24rpx 32rpx 16rpx"><text class="group-title">支出类目</text></view>
+      <view class="category-wrap">
+        <view
+          class="cat-chip {{form.category === item.value ? 'selected' : ''}}"
+          wx:for="{{categories}}"
+          wx:key="value"
+          bindtap="selectCategory"
+          data-val="{{item.value}}"
+        >
+          <text>{{item.icon}} {{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 上传凭证 -->
+    <view class="form-group">
+      <view style="padding: 24rpx 32rpx 16rpx; display: flex; justify-content: space-between; align-items: center;">
+        <text class="group-title">消费凭证</text>
+        <text class="group-hint">最多 6 张</text>
+      </view>
+      <view class="upload-grid">
+        <!-- 已上传缩略图 -->
+        <view
+          class="upload-thumb"
+          wx:for="{{form.receiptPreviews}}"
+          wx:key="index"
+          bindtap="previewImage"
+          data-url="{{item}}"
+        >
+          <image class="thumb-img" src="{{item}}" mode="aspectFill"></image>
+          <view class="thumb-del" catchtap="removeReceipt" data-index="{{index}}">×</view>
+        </view>
+        <!-- 添加按钮 -->
+        <view wx:if="{{form.receiptPreviews.length < 6}}" class="upload-add" bindtap="addReceipt">
+          <text class="ua-plus">+</text>
+          <text class="ua-text">添加凭证</text>
+        </view>
+      </view>
+      <view style="padding: 12rpx 32rpx 24rpx">
+        <text style="font-size: 22rpx; color: #ADADAD">支持订单截图、发票照片等消费凭证</text>
+      </view>
+    </view>
+
+    <!-- 公开开关 -->
+    <view class="form-group">
+      <view class="form-row">
+        <view style="flex: 1">
+          <text class="fr-label" style="width: auto">全部家长可见</text>
+          <text style="font-size: 22rpx; color: #ADADAD; display: block; margin-top: 4rpx">保存后所有家长可查看此记录</text>
+        </view>
+        <switch color="#07C160" checked="{{form.isPublic}}" bindchange="onPublicChange" />
+      </view>
+    </view>
+
+  </view>
+
+  <!-- ══ 收费表单 ════════════════════════════ -->
+  <view wx:if="{{type === 'income'}}" class="form-section">
+    <view class="form-group">
+      <picker range="{{studentOptions}}" value="{{studentPickerIdx}}" bindchange="onStudentPick">
+        <view class="form-row">
+          <text class="fr-label">学生 <text style="color:#FF4D4F">*</text></text>
+          <text class="fr-val {{form.childName ? '' : 'ph'}}">
+            {{form.childName ? (form.studentNo + '  ' + form.childName) : (studentOptions.length > 0 ? '请选择学生' : '加载中...')}}
+          </text>
+          <text class="fr-arrow">›</text>
+        </view>
+      </picker>
+      <view class="form-row">
+        <text class="fr-label">付款人</text>
+        <input class="fr-input" placeholder="如：张子涵妈妈（可选）" value="{{form.payer}}" bindinput="onInput" data-field="payer" />
+      </view>
+      <view class="form-row" bindtap="pickDate">
+        <text class="fr-label">收款日期</text>
+        <text class="fr-val {{form.date ? '' : 'ph'}}">{{form.date || '选择日期'}}</text>
+        <text class="fr-arrow">›</text>
+      </view>
+      <view class="form-row" bindtap="pickPayMethod">
+        <text class="fr-label">收款方式</text>
+        <text class="fr-val {{form.payMethod ? '' : 'ph'}}">{{form.payMethod || '选择方式'}}</text>
+        <text class="fr-arrow">›</text>
+      </view>
+      <view class="form-row" style="align-items:flex-start">
+        <text class="fr-label" style="padding-top:4rpx">备注</text>
+        <input class="fr-input" placeholder="可选" value="{{form.notes}}" bindinput="onInput" data-field="notes" />
+      </view>
+    </view>
+  </view>
+
+  <!-- ══ 提交按钮 ════════════════════════════ -->
+  <button class="submit-btn {{type}}" bindtap="submit" loading="{{submitting}}">
+    {{submitting ? '提交中...' : (type === 'expense' ? '确认保存支出' : '确认保存收费')}}
+  </button>
+
+  <view style="height: 40rpx"></view>
+  <view class="safe-bottom"></view>
+</view>
+
+<!-- 日期选择器 -->
+<picker
+  mode="date"
+  value="{{form.date}}"
+  bindchange="onDateChange"
+  style="position:absolute;opacity:0;pointer-events:{{showDatePicker?'all':'none'}}"
+/>

@@ -1,0 +1,156 @@
+/* pages/detail/detail.wxss */
+.summary-header {
+  background: #07C160;
+  padding-bottom: 0;
+}
+
+/* 学年切换 */
+.year-scroll {
+  white-space: nowrap;
+  padding: 20rpx 24rpx 0;
+}
+.year-tabs {
+  display: inline-flex;
+  gap: 16rpx;
+  padding-bottom: 4rpx;
+}
+.year-tab {
+  display: inline-block;
+  padding: 10rpx 28rpx;
+  border-radius: 32rpx;
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.7);
+  border: 1rpx solid rgba(255,255,255,0.35);
+  white-space: nowrap;
+}
+.year-tab.active {
+  background: white;
+  color: #07C160;
+  font-weight: 700;
+  border-color: white;
+}
+
+.summary-row { display: flex; padding: 20rpx 24rpx 16rpx; }
+.summary-row-sp { padding-top: 0; border-top: 1rpx solid rgba(255,255,255,0.15); }
+.summary-item { flex: 1; text-align: center; }
+.si-label { font-size: 22rpx; color: rgba(255,255,255,0.75); display: block; margin-bottom: 4rpx; }
+.si-value { font-size: 30rpx; font-weight: 800; color: white; display: block; }
+.si-income  { color: #B7F5D0; }
+.si-expense { color: #FFD0D0; }
+.si-balance { color: white; }
+.summary-divider { width: 1rpx; background: rgba(255,255,255,0.2); margin: 8rpx 0; }
+
+.tab-bar { display: flex; background: rgba(0,0,0,0.15); }
+.tab { flex: 1; text-align: center; padding: 20rpx 0; font-size: 28rpx; font-weight: 500; color: rgba(255,255,255,0.65); }
+.tab.active { background: white; color: #07C160; font-weight: 800; border-radius: 20rpx 20rpx 0 0; }
+.tab.export-tab { flex: 0 0 auto; padding: 20rpx 20rpx; font-size: 24rpx; color: rgba(255,255,255,0.85); }
+
+/* 筛选标签 */
+.chips-row {
+  background: white;
+  white-space: nowrap;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+.chip {
+  display: inline-block;
+  padding: 10rpx 24rpx;
+  border-radius: 40rpx;
+  font-size: 24rpx;
+  border: 1rpx solid #E0E0E0;
+  color: #595959;
+  margin-right: 14rpx;
+}
+.chip.active { background: #E7F9EF; border-color: #07C160; color: #07C160; font-weight: 600; }
+
+/* 月份标签 */
+.month-label { padding: 20rpx 32rpx 12rpx; font-size: 22rpx; color: #ADADAD; font-weight: 600; letter-spacing: 2rpx; }
+
+/* 记录卡片 */
+.record-card { background: white; border-radius: 24rpx; margin: 0 24rpx 8rpx; overflow: hidden; box-shadow: 0 2rpx 16rpx rgba(0,0,0,0.05); }
+.record-item { display: flex; align-items: center; padding: 28rpx 32rpx; gap: 24rpx; border-bottom: 1rpx solid #F5F5F5; }
+.record-item:last-child { border-bottom: none; }
+.ri-icon-wrap { width: 80rpx; height: 80rpx; border-radius: 22rpx; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ri-icon { font-size: 38rpx; }
+.bg-pink { background: #FFF0F6; } .bg-orange { background: #FFF7E6; } .bg-purple { background: #F5F0FF; }
+.bg-green { background: #E7F9EF; } .bg-green-light { background: #E7F9EF; } .bg-blue { background: #EBF5FF; } .bg-gray { background: #F5F5F5; }
+.ri-body { flex: 1; min-width: 0; }
+.ri-name { font-size: 28rpx; font-weight: 500; color: #1C1C1C; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ri-meta { display: flex; align-items: center; gap: 12rpx; margin-top: 6rpx; }
+.ri-date { font-size: 22rpx; color: #ADADAD; }
+.ri-cat { font-size: 20rpx; color: #ADADAD; background: #F5F5F5; padding: 2rpx 10rpx; border-radius: 8rpx; }
+.receipt-dot { font-size: 20rpx; color: #888; background: #F0F0F0; padding: 2rpx 10rpx; border-radius: 8rpx; }
+.ri-amount { font-size: 30rpx; font-weight: 800; flex-shrink: 0; }
+.ri-amount.expense { color: #FF4D4F; }
+.ri-amount.income  { color: #07C160; }
+
+/* 图表 */
+.chart-card { background: white; border-radius: 24rpx; margin: 24rpx; padding: 32rpx; box-shadow: 0 2rpx 16rpx rgba(0,0,0,0.05); }
+.chart-row { display: flex; align-items: center; margin-bottom: 20rpx; gap: 16rpx; }
+.chart-label-wrap { display: flex; align-items: center; gap: 8rpx; width: 120rpx; flex-shrink: 0; }
+.chart-icon { font-size: 28rpx; }
+.chart-label { font-size: 24rpx; color: #595959; }
+.chart-bar-wrap { flex: 1; height: 16rpx; background: #F0F0F0; border-radius: 8rpx; overflow: hidden; }
+.chart-bar { height: 100%; border-radius: 8rpx; transition: width 0.5s; }
+.chart-pct { font-size: 24rpx; color: #595959; font-weight: 600; width: 70rpx; text-align: right; flex-shrink: 0; }
+
+/* ══ 专项基金 ═══════════════════════════════════ */
+.fund-create-btn {
+  display: flex; align-items: center; justify-content: center; gap: 12rpx;
+  margin: 24rpx; padding: 28rpx;
+  background: #F6FFED; border: 2rpx dashed #07C160; border-radius: 20rpx;
+}
+.fund-create-icon { font-size: 40rpx; color: #07C160; font-weight: 300; }
+.fund-create-text { font-size: 28rpx; color: #07C160; font-weight: 600; }
+
+.fund-list { padding: 0 24rpx; }
+.fund-card {
+  display: flex; align-items: center; background: white;
+  border-radius: 20rpx; padding: 28rpx 32rpx; margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
+}
+.fund-card-left { flex: 1; }
+.fund-card-name-row { display: flex; align-items: center; gap: 16rpx; margin-bottom: 8rpx; }
+.fund-card-name { font-size: 30rpx; font-weight: 700; color: #1C1C1C; }
+.fund-card-fee { font-size: 24rpx; color: #595959; display: block; }
+.fund-card-desc { font-size: 22rpx; color: #ADADAD; display: block; margin-top: 4rpx; }
+.fund-card-arrow { font-size: 40rpx; color: #D9D9D9; margin-left: 16rpx; }
+
+.fund-status-badge { font-size: 20rpx; font-weight: 600; padding: 4rpx 14rpx; border-radius: 20rpx; }
+.fund-status-badge.active   { background: #E7F9EF; color: #07C160; }
+.fund-status-badge.closed   { background: #F5F5F5; color: #ADADAD; }
+
+/* 专项详情 */
+.fund-detail-header {
+  display: flex; align-items: center; gap: 16rpx;
+  padding: 24rpx 32rpx; background: white; border-bottom: 1rpx solid #F0F0F0;
+}
+.fund-back { font-size: 28rpx; color: #07C160; padding: 0 8rpx; }
+.fund-detail-title { flex: 1; font-size: 30rpx; font-weight: 700; color: #1C1C1C; }
+
+.fund-summary-card {
+  display: flex; background: white; margin: 16rpx 24rpx; border-radius: 20rpx;
+  padding: 24rpx; box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
+}
+.fund-sum-item { flex: 1; text-align: center; }
+.fund-sum-label { font-size: 22rpx; color: #ADADAD; display: block; margin-bottom: 6rpx; }
+.fund-sum-value { font-size: 32rpx; font-weight: 800; color: #1C1C1C; display: block; }
+.fund-sum-value.green { color: #07C160; }
+.fund-sum-value.red   { color: #FF4D4F; }
+.fund-sum-divider { width: 1rpx; background: #F0F0F0; margin: 8rpx 0; }
+
+.fund-actions { display: flex; flex-direction: column; gap: 16rpx; margin: 0 24rpx 16rpx; }
+.fund-action-btn {
+  text-align: center; padding: 24rpx; border-radius: 16rpx;
+  font-size: 28rpx; font-weight: 600; color: white;
+}
+.fund-action-btn.orange { background: #FF8C00; }
+.fund-action-btn.green  { background: #07C160; }
+.fund-action-btn.disabled { opacity: 0.5; }
+
+.fund-subtab-bar {
+  display: flex; background: #F5F5F5; margin: 0 24rpx; border-radius: 16rpx; padding: 6rpx;
+}
+.fund-subtab { flex: 1; text-align: center; padding: 14rpx 0; font-size: 26rpx; color: #595959; border-radius: 12rpx; }
+.fund-subtab.active { background: white; color: #07C160; font-weight: 700; box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.08); }
+

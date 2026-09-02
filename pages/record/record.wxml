@@ -1,0 +1,108 @@
+<!-- pages/record/record.wxml -->
+<view class="container" wx:if="{{!loading}}">
+
+  <!-- ══ 金额头部 ══════════════════════════════ -->
+  <view class="amount-hero {{type}}">
+    <text class="hero-icon">{{icon}}</text>
+    <text class="hero-title">{{title}}</text>
+    <text class="hero-amount">{{amountStr}}</text>
+    <view class="hero-badge">{{badgeLabel}}</view>
+  </view>
+
+  <!-- ══ 基本信息 ══════════════════════════════ -->
+  <view class="info-card">
+    <view class="info-row">
+      <text class="info-label">日期</text>
+      <text class="info-val">{{record.date || record.createdAt}}</text>
+    </view>
+    <!-- 支出专有字段 -->
+    <view wx:if="{{type === 'expense'}}" class="info-row">
+      <text class="info-label">类目</text>
+      <text class="info-val">{{categoryLabel}}</text>
+    </view>
+    <view wx:if="{{type === 'expense'}}" class="info-row">
+      <text class="info-label">垫付人</text>
+      <text class="info-val">{{record.advancer || '—'}}</text>
+    </view>
+    <view wx:if="{{type === 'expense'}}" class="info-row">
+      <text class="info-label">报销状态</text>
+      <view wx:if="{{record.reimbursementStatus === 'reimbursed'}}" class="status-badge reimbursed">✅ 已报销</view>
+      <view wx:else class="status-badge unreimbursed">⏳ 未报销</view>
+    </view>
+    <view wx:if="{{type === 'expense' && record.eventName}}" class="info-row">
+      <text class="info-label">关联活动</text>
+      <text class="info-val">{{record.eventName}}</text>
+    </view>
+    <!-- 收费专有字段 -->
+    <view wx:if="{{type === 'income'}}" class="info-row">
+      <text class="info-label">学号</text>
+      <text class="info-val">{{record.studentNo || '—'}}</text>
+    </view>
+    <view wx:if="{{type === 'income'}}" class="info-row">
+      <text class="info-label">学生姓名</text>
+      <text class="info-val">{{record.childName || '—'}}</text>
+    </view>
+    <view wx:if="{{type === 'income'}}" class="info-row">
+      <text class="info-label">付款人</text>
+      <text class="info-val">{{record.payer || '—'}}</text>
+    </view>
+    <view wx:if="{{type === 'income'}}" class="info-row">
+      <text class="info-label">缴费方式</text>
+      <text class="info-val">{{record.payMethod || '—'}}</text>
+    </view>
+    <view wx:if="{{type === 'income'}}" class="info-row">
+      <text class="info-label">学年</text>
+      <text class="info-val">{{record.yearTerm || '—'}}</text>
+    </view>
+    <!-- 备注 -->
+    <view wx:if="{{record.notes}}" class="info-row">
+      <text class="info-label">备注</text>
+      <text class="info-val notes">{{record.notes}}</text>
+    </view>
+  </view>
+
+  <!-- ══ 凭证图片 ══════════════════════════════ -->
+  <view wx:if="{{receiptUrls.length > 0}}" class="receipt-card">
+    <text class="card-title">📎 消费凭证（{{receiptUrls.length}} 张）</text>
+    <view class="receipt-grid">
+      <image
+        wx:for="{{receiptUrls}}"
+        wx:key="index"
+        class="receipt-img"
+        src="{{item}}"
+        mode="aspectFill"
+        bindtap="previewImage"
+        data-index="{{index}}"
+      />
+    </view>
+  </view>
+
+  <!-- ══ 报销转账凭证 ════════════════════════════ -->
+  <view wx:if="{{type === 'expense' && voucherUrl}}" class="receipt-card">
+    <text class="card-title">💳 报销凭证</text>
+    <view class="receipt-grid">
+      <image class="receipt-img" src="{{voucherUrl}}" mode="aspectFill" bindtap="previewVoucher" />
+    </view>
+  </view>
+
+  <!-- ══ 操作区 ═════════════════════════════════ -->
+  <!-- 出纳报销按钮（未报销 + 仅出纳可见） -->
+  <view wx:if="{{type === 'expense' && record.reimbursementStatus !== 'reimbursed' && isCashier}}" class="action-area">
+    <view class="reimburse-btn {{reimbursing ? 'disabled' : ''}}" bindtap="reimburseTapped">
+      💳 标记已报销（附转账凭证）
+    </view>
+  </view>
+
+  <!-- 普通记录删除按钮 -->
+  <view wx:if="{{isAdmin}}" class="action-area">
+    <view class="del-btn" bindtap="deleteRecord">删除此记录</view>
+  </view>
+
+  <view style="height:60rpx"></view>
+  <view class="safe-bottom"></view>
+</view>
+
+<!-- 加载中 -->
+<view wx:else class="loading-wrap" style="padding-top:200rpx">
+  <loading></loading>
+</view>

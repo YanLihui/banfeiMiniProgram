@@ -1,0 +1,46 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/detail/detail",
+    "pages/add/add",
+    "pages/profile/profile",
+    "pages/members/members",
+    "pages/confirm/confirm",
+    "pages/record/record",
+    "pages/onboard/onboard",
+    "pages/roles/roles",
+    "pages/setup/setup",
+    "pages/privacy/privacy"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#07C160",
+    "navigationBarTitleText": "班费管理",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F7FA",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#ADADAD",
+    "selectedColor": "#07C160",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/detail/detail",
+        "text": "收支"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "cloud": true,
+  "lazyCodeLoading": "requiredComponents"
+}

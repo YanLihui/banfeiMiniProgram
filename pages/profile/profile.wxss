@@ -1,0 +1,151 @@
+/* pages/profile/profile.wxss */
+.profile-hero {
+  background: linear-gradient(155deg, #07C160 0%, #047A3B 100%);
+  padding: 36rpx 32rpx 40rpx;
+  display: flex; align-items: center; gap: 28rpx;
+  position: relative; overflow: hidden;
+}
+.profile-hero::before {
+  content: ''; position: absolute; right: -60rpx; top: -60rpx;
+  width: 300rpx; height: 300rpx; border-radius: 50%; background: rgba(255,255,255,0.07);
+}
+.avatar { width: 120rpx; height: 120rpx; border-radius: 50%; background: rgba(255,255,255,0.2); border: 4rpx solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+.avatar-img { width: 100%; height: 100%; }
+.avatar-placeholder { font-size: 52rpx; color: white; font-weight: 800; }
+.profile-info { flex: 1; color: white; }
+.profile-name  { font-size: 36rpx; font-weight: 800; display: block; }
+.profile-child { font-size: 24rpx; opacity: 0.8; display: block; margin-top: 6rpx; }
+.role-badge { display: inline-flex; align-items: center; background: rgba(255,255,255,0.2); border: 1rpx solid rgba(255,255,255,0.35); border-radius: 40rpx; padding: 6rpx 20rpx; font-size: 22rpx; color: white; margin-top: 12rpx; }
+.edit-btn { color: rgba(255,255,255,0.85); font-size: 26rpx; position: relative; z-index: 1; }
+
+/* 统计数字 */
+.stats-row { display: flex; background: white; border-bottom: 16rpx solid #F5F7FA; }
+.stat-item { flex: 1; padding: 28rpx 0; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8rpx; }
+.stat-num  { font-size: 44rpx; font-weight: 900; color: #1C1C1C; }
+.stat-num.green { color: #07C160; }
+.stat-num.red   { color: #FF4D4F; }
+.stat-label { font-size: 22rpx; color: #ADADAD; }
+.stat-divider { width: 1rpx; background: #F0F0F0; margin: 20rpx 0; }
+
+/* section title */
+.section-title-bar { padding: 28rpx 32rpx 12rpx; font-size: 26rpx; font-weight: 700; color: #ADADAD; letter-spacing: 2rpx; }
+
+/* 菜单 */
+.menu-group { background: white; border-radius: 24rpx; margin: 0 24rpx 16rpx; overflow: hidden; box-shadow: 0 2rpx 16rpx rgba(0,0,0,0.05); }
+.menu-item  { display: flex; align-items: center; padding: 28rpx 32rpx; gap: 24rpx; border-bottom: 1rpx solid #F5F5F5; }
+.menu-item:last-child { border-bottom: none; }
+.mi-icon   { width: 72rpx; height: 72rpx; border-radius: 20rpx; display: flex; align-items: center; justify-content: center; font-size: 36rpx; flex-shrink: 0; }
+.mi-icon.green  { background: #E7F9EF; }
+.mi-icon.orange { background: #FFF7E6; }
+.mi-icon.blue   { background: #EBF5FF; }
+.mi-icon.purple { background: #F5F0FF; }
+.mi-icon.gray   { background: #F5F5F5; }
+.mi-icon.red    { background: #FFF0F0; }
+.mi-text  { flex: 1; font-size: 30rpx; color: #1C1C1C; }
+.mi-badge { background: #FF4D4F; color: white; border-radius: 20rpx; padding: 4rpx 14rpx; font-size: 22rpx; }
+.mi-badge.orange { background: #FA8C16; }
+.mi-sub   { font-size: 24rpx; color: #ADADAD; }
+.mi-arrow { font-size: 28rpx; color: #D9D9D9; }
+
+/* ══ 编辑弹窗 ══════════════════════════════════ */
+.modal-mask {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: flex-end;
+  z-index: 999;
+}
+.modal-card {
+  background: white;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 40rpx 32rpx 60rpx;
+  width: 100%;
+}
+.modal-title {
+  font-size: 32rpx; font-weight: 800; color: #1C1C1C;
+  display: block; margin-bottom: 36rpx;
+}
+.modal-field { margin-bottom: 28rpx; }
+.modal-label { font-size: 24rpx; color: #8C8C8C; display: block; margin-bottom: 10rpx; }
+.modal-input {
+  width: 100%; height: 88rpx; line-height: 88rpx;
+  background: #F5F7FA; border-radius: 16rpx;
+  padding: 0 24rpx; font-size: 28rpx; color: #1C1C1C;
+  box-sizing: border-box;
+}
+.modal-btns {
+  display: flex; gap: 20rpx; margin-top: 40rpx;
+}
+.modal-btn {
+  flex: 1; height: 88rpx; border-radius: 44rpx;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30rpx; font-weight: 700;
+}
+.modal-btn.cancel  { background: #F5F5F5; color: #8C8C8C; }
+.modal-btn.confirm { background: #07C160; color: white; }
+.modal-btn.disabled { opacity: 0.6; }
+.modal-section-title {
+  font-size: 22rpx; color: #ADADAD; font-weight: 600;
+  letter-spacing: 2rpx; margin: 8rpx 0 24rpx;
+  border-top: 1rpx solid #F0F0F0; padding-top: 28rpx;
+}
+/* 学年标签 */
+.profile-term {
+  font-size: 22rpx; opacity: 0.65; display: block; margin-top: 4rpx;
+}
+/* 颜色辅助 */
+.mi-icon.teal { background: #E6FFFB; }
+/* 账目报告弹窗 */
+.report-card { max-height: 80vh; overflow-y: auto; }
+.modal-desc {
+  font-size: 24rpx; color: #8C8C8C; display: block;
+  margin: -8rpx 0 28rpx;
+}
+/* 报告学年切换 */
+.report-year-scroll {
+  white-space: nowrap;
+  margin: 0 -32rpx 20rpx;
+  padding: 0 32rpx;
+}
+.report-year-tabs {
+  display: inline-flex;
+  gap: 12rpx;
+}
+.report-year-tab {
+  display: inline-block;
+  padding: 10rpx 24rpx;
+  border-radius: 32rpx;
+  font-size: 24rpx;
+  color: #8C8C8C;
+  border: 1rpx solid #E0E0E0;
+  white-space: nowrap;
+}
+.report-year-tab.active {
+  background: #E7F9EF;
+  border-color: #07C160;
+  color: #07C160;
+  font-weight: 700;
+}
+.report-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18rpx 0; border-bottom: 1rpx solid #F5F5F5;
+}
+.report-label { font-size: 28rpx; color: #595959; }
+.report-value { font-size: 28rpx; font-weight: 700; color: #1C1C1C; }
+.report-value.green { color: #07C160; }
+.report-value.red   { color: #FF4D4F; }
+.report-divider { height: 16rpx; }
+.report-balance .report-label { font-size: 30rpx; font-weight: 700; color: #1C1C1C; }
+.report-balance .report-value { font-size: 36rpx; }
+.report-loading { padding: 60rpx 0; text-align: center; color: #ADADAD; font-size: 28rpx; }
+
+.picker-field-row {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 88rpx;
+  background: #F5F7FA; border-radius: 16rpx;
+  padding: 0 24rpx; box-sizing: border-box; width: 100%;
+}
+.picker-text-wrap { flex: 1; display: flex; align-items: center; height: 100%; }
+.picker-row { display: flex; align-items: center; justify-content: space-between; height: 88rpx; }
+.picker-ph  { color: #BFBFBF; font-size: 28rpx; }
+.picker-val { color: #1C1C1C; font-size: 28rpx; }
+.picker-arrow { font-size: 32rpx; color: #D9D9D9; }

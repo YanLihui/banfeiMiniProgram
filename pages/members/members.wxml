@@ -1,0 +1,172 @@
+<!-- pages/members/members.wxml -->
+<view class="container">
+
+  <!-- ══ 统计头部 ══════════════════════════════ -->
+  <view class="summary-bar">
+    <view class="summary-item">
+      <text class="summary-num green">{{paidCount}}</text>
+      <text class="summary-label">已缴费</text>
+    </view>
+    <view class="summary-divider"></view>
+    <view class="summary-item">
+      <text class="summary-num red">{{unpaidCount}}</text>
+      <text class="summary-label">未缴费</text>
+    </view>
+    <view class="summary-divider"></view>
+    <view class="summary-item">
+      <text class="summary-num">{{totalStudents}}</text>
+      <text class="summary-label">全班人数</text>
+    </view>
+  </view>
+
+  <!-- ══ 筛选 Tab ══════════════════════════════ -->
+  <view class="filter-bar">
+    <view
+      class="filter-tab {{activeFilter === 'all' ? 'active' : ''}}"
+      bindtap="setFilter"
+      data-filter="all"
+    >全部 ({{totalStudents}})</view>
+    <view
+      class="filter-tab {{activeFilter === 'paid' ? 'active' : ''}}"
+      bindtap="setFilter"
+      data-filter="paid"
+    >已缴费 ({{paidCount}})</view>
+    <view
+      class="filter-tab {{activeFilter === 'unpaid' ? 'active' : ''}}"
+      bindtap="setFilter"
+      data-filter="unpaid"
+    >未缴费 ({{unpaidCount}})</view>
+  </view>
+
+  <!-- ══ 搜索框 ════════════════════════════════ -->
+  <view class="search-wrap">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input
+        class="search-input"
+        placeholder="搜索姓名..."
+        value="{{keyword}}"
+        bindinput="onSearch"
+        confirm-type="search"
+      />
+      <text wx:if="{{keyword}}" class="search-clear" bindtap="clearSearch">✕</text>
+    </view>
+  </view>
+
+  <!-- ══ 成员列表 ══════════════════════════════ -->
+  <view class="list-card">
+    <!-- 加载中 -->
+    <view wx:if="{{loading}}" class="loading-wrap">
+      <loading></loading>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:elif="{{displayList.length === 0}}" class="empty-state">
+      <text style="font-size:60rpx">🔎</text>
+      <text>没有找到相关成员</text>
+    </view>
+
+    <!-- 成员列表 -->
+    <block wx:else>
+      <view
+          class="member-item"
+          wx:for="{{displayList}}"
+          wx:key="name"
+          bindlongpress="onMemberLongPress"
+          data-id="{{item._id}}"
+          data-name="{{item.name}}"
+          data-studentno="{{item.studentNo}}"
+        >
+        <!-- 头像 -->
+        <view class="member-avatar {{item.paid ? 'paid' : 'unpaid'}}">
+          <text class="member-initial">{{item.initial}}</text>
+        </view>
+
+        <!-- 信息 -->
+        <view class="member-info">
+          <view class="member-name-row">
+            <text wx:if="{{item.studentNo}}" class="member-no">{{item.studentNo}}</text>
+            <text class="member-name">{{item.name}}</text>
+            <view class="member-badge {{item.paid ? 'badge-paid' : 'badge-unpaid'}}">
+              {{item.paid ? '已缴费' : '未缴费'}}
+            </view>
+          </view>
+          <text class="member-sub" wx:if="{{item.paid}}">
+            ¥{{item.amountStr}} · {{item.payDate}} · {{item.payMethod}}
+          </text>
+          <text class="member-sub unpaid-hint" wx:else>待缴 ¥{{feePerStudent}}</text>
+        </view>
+
+        <!-- admin 操作 -->
+        <view wx:if="{{isAdmin}}" class="member-action">
+          <view
+            wx:if="{{!item.paid && isCashier}}"
+            class="action-btn-sm green"
+            bindtap="markPaid"
+            data-name="{{item.name}}"
+            data-studentno="{{item.studentNo}}"
+          >录入</view>
+          <view
+            wx:elif="{{item.paid}}"
+            class="action-btn-sm gray"
+            bindtap="viewPayment"
+            data-id="{{item.incomeId}}"
+          >详情</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- ══ 底部：admin 导入名单入口 ════════════ -->
+  <view wx:if="{{isChair}}" class="import-btn-wrap">
+    <view class="import-btn" bindtap="openImportModal">📋 导入花名册</view>
+  </view>
+
+  <view style="height: 40rpx"></view>
+  <view class="safe-bottom"></view>
+
+  <!-- ══ 编辑成员弹窗 ════════════════════════ -->
+  <view wx:if="{{showEditModal}}" class="modal-mask" bindtap="closeEditModal">
+    <view class="modal-card" catchtap="noop">
+      <text class="modal-title">修改成员信息</text>
+      <view class="edit-field">
+        <text class="edit-label">姓名 <text style="color:#FF4D4F">*</text></text>
+        <input class="edit-input" value="{{editName}}" bindinput="onEditNameInput" placeholder="请输入姓名" focus="{{true}}"/>
+      </view>
+      <view class="edit-field">
+        <text class="edit-label">学号</text>
+        <input class="edit-input" value="{{editStudentNo}}" bindinput="onEditStudentNoInput" placeholder="如：01" type="number"/>
+      </view>
+      <view class="modal-btns">
+        <view class="modal-btn cancel" bindtap="closeEditModal">取消</view>
+        <view class="modal-btn confirm {{editSaving ? 'disabled' : ''}}" bindtap="saveEdit">
+          {{editSaving ? '保存中...' : '保存'}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+
+  <view wx:if="{{showImportModal}}" class="modal-mask" bindtap="closeImportModal">
+    <view class="modal-card" catchtap="noop" style="margin-bottom: {{keyboardHeight}}px;">
+      <text class="modal-title">导入花名册</text>
+      <text class="modal-hint">每行输入一个学生姓名，已存在的姓名自动跳过</text>
+      <textarea
+        class="modal-textarea"
+        placeholder="支持学号+姓名格式，例：01 张三、02李四，或直接输入姓名"
+        value="{{importText}}"
+        bindinput="onImportTextInput"
+        adjust-position="{{true}}"
+        maxlength="2000"
+      />
+      <text wx:if="{{importCount > 0}}" class="modal-count">已识别 {{importCount}} 人</text>
+      <view class="modal-btns">
+        <view class="modal-btn cancel" bindtap="closeImportModal">取消</view>
+        <view
+          class="modal-btn confirm {{importing ? 'disabled' : ''}}"
+          bindtap="doImport"
+        >{{importing ? '导入中...' : '确认导入'}}</view>
+      </view>
+    </view>
+  </view>
+</view>

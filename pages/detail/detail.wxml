@@ -1,0 +1,255 @@
+<!-- pages/detail/detail.wxml -->
+<view class="container">
+
+  <!-- ══ 汇总头部 ════════════════════════════ -->
+  <view class="summary-header">
+
+    <!-- 学年切换 -->
+    <scroll-view scroll-x class="year-scroll" wx:if="{{availableYearTerms.length > 0}}">
+      <view class="year-tabs">
+        <view
+          wx:for="{{availableYearTerms}}"
+          wx:key="*this"
+          class="year-tab {{item === selectedYearTerm ? 'active' : ''}}"
+          bindtap="switchYearTerm"
+          data-yt="{{item}}"
+        >{{item}} 学年</view>
+      </view>
+    </scroll-view>
+
+    <view class="summary-row">
+      <view class="summary-item">
+        <text class="si-label">班费收入</text>
+        <text class="si-value si-income">¥{{genIncomeStr}}</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-item">
+        <text class="si-label">班费支出</text>
+        <text class="si-value si-expense">¥{{genExpenseStr}}</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-item">
+        <text class="si-label">班费余额</text>
+        <text class="si-value si-balance">¥{{genBalanceStr}}</text>
+      </view>
+    </view>
+    <view class="summary-row summary-row-sp">
+      <view class="summary-item">
+        <text class="si-label">专项收入</text>
+        <text class="si-value si-income">¥{{spIncomeStr}}</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-item">
+        <text class="si-label">专项支出</text>
+        <text class="si-value si-expense">¥{{spExpenseStr}}</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-item">
+        <text class="si-label">专项余额</text>
+        <text class="si-value si-balance">¥{{spBalanceStr}}</text>
+      </view>
+    </view>
+
+    <!-- Tab 切换 + 导出按钮 -->
+    <view class="tab-bar">
+      <view class="tab {{activeTab === 'all' ? 'active' : ''}}"     bindtap="switchTab" data-tab="all">全部</view>
+      <view class="tab {{activeTab === 'expense' ? 'active' : ''}}" bindtap="switchTab" data-tab="expense">支出</view>
+      <view class="tab {{activeTab === 'income' ? 'active' : ''}}"  bindtap="switchTab" data-tab="income">收入</view>
+      <view class="tab {{activeTab === 'fund' ? 'active' : ''}}"    bindtap="switchTab" data-tab="fund">🎯 专项</view>
+      <view wx:if="{{isFinance || isChair}}" class="tab export-tab" bindtap="exportCSV">📤 导出</view>
+    </view>
+  </view>
+
+  <!-- ══ 专项列表 tab ════════════════════════ -->
+  <block wx:if="{{activeTab === 'fund'}}">
+
+    <!-- 专项详情（二层） -->
+    <block wx:if="{{activeFund}}">
+      <view class="fund-detail-header">
+        <view class="fund-back" bindtap="closeFundDetail">‹ 返回</view>
+        <text class="fund-detail-title">{{activeFund.name}}</text>
+        <view class="fund-status-badge {{activeFund.status}}">{{activeFund.status === 'active' ? '进行中' : '已结束'}}</view>
+      </view>
+
+      <!-- 专项汇总 -->
+      <view class="fund-summary-card">
+        <view class="fund-sum-item">
+          <text class="fund-sum-label">已收</text>
+          <text class="fund-sum-value green">¥{{fundTotalIncomeStr}}</text>
+        </view>
+        <view class="fund-sum-divider"></view>
+        <view class="fund-sum-item">
+          <text class="fund-sum-label">已支</text>
+          <text class="fund-sum-value red">¥{{fundTotalExpenseStr}}</text>
+        </view>
+        <view class="fund-sum-divider"></view>
+        <view class="fund-sum-item">
+          <text class="fund-sum-label">余额</text>
+          <text class="fund-sum-value">¥{{fundBalanceStr}}</text>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="fund-actions">
+        <view wx:if="{{isCashier}}" class="fund-action-btn green" bindtap="goAddFundIncome">
+          💰 录入收费
+        </view>
+        <view wx:if="{{isAdmin}}" class="fund-action-btn orange" bindtap="goAddFundExpense">
+          📋 添加支出
+        </view>
+        <view
+          wx:if="{{isCashier && activeFund.status === 'active' && !activeFund.transferredToGeneral && fundBalance > 0}}"
+          class="fund-action-btn gray {{transferring ? 'disabled' : ''}}"
+          bindtap="transferFundBalance"
+        >
+          {{transferring ? '处理中...' : '结余转入班费 ¥' + fundBalanceStr}}
+        </view>
+      </view>
+
+      <!-- 子 tab -->
+      <view class="fund-subtab-bar">
+        <view class="fund-subtab {{fundActiveSubTab === 'all' ? 'active' : ''}}"     bindtap="switchFundSubTab" data-tab="all">全部</view>
+        <view class="fund-subtab {{fundActiveSubTab === 'expense' ? 'active' : ''}}" bindtap="switchFundSubTab" data-tab="expense">支出</view>
+        <view class="fund-subtab {{fundActiveSubTab === 'income' ? 'active' : ''}}"  bindtap="switchFundSubTab" data-tab="income">收入</view>
+      </view>
+
+      <!-- 记录列表 -->
+      <view wx:if="{{fundDetailLoading}}" class="loading-wrap"><loading></loading></view>
+      <view wx:elif="{{fundRecords.length === 0}}" class="empty-state">
+        <text style="font-size:60rpx">📭</text>
+        <text>暂无记录</text>
+      </view>
+      <view wx:else class="record-card">
+        <view
+          class="record-item"
+          wx:for="{{fundRecords}}"
+          wx:key="_id"
+          bindtap="viewRecord"
+          bindlongpress="onFundRecordLongPress"
+          data-id="{{item._id}}"
+          data-type="{{item.recordType}}"
+          data-name="{{item.displayName}}"
+        >
+          <view class="ri-icon-wrap {{item.iconBg}}">
+            <text class="ri-icon">{{item.icon}}</text>
+          </view>
+          <view class="ri-body">
+            <text class="ri-name">{{item.displayName}}</text>
+            <view class="ri-meta">
+              <text class="ri-date">{{item.displayDate}}</text>
+              <view wx:if="{{item.receiptsCount > 0}}" class="receipt-dot">📎 {{item.receiptsCount}}</view>
+            </view>
+          </view>
+          <text class="ri-amount {{item.recordType}}">{{item.amountStr}}</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- 专项列表（一层） -->
+    <block wx:else>
+      <!-- 新建专项（chair/cashier） -->
+      <view wx:if="{{isChair || isCashier}}" class="fund-create-btn" bindtap="createFund">
+        <text class="fund-create-icon">＋</text>
+        <text class="fund-create-text">新建专项活动</text>
+      </view>
+
+      <view wx:if="{{fundsLoading}}" class="loading-wrap"><loading></loading></view>
+      <view wx:elif="{{funds.length === 0}}" class="empty-state">
+        <text style="font-size:60rpx">🎯</text>
+        <text>暂无专项活动</text>
+      </view>
+      <view wx:else class="fund-list">
+        <view
+          class="fund-card"
+          wx:for="{{funds}}"
+          wx:key="_id"
+          bindtap="openFundDetail"
+          bindlongpress="onFundCardLongPress"
+          data-fund="{{item}}"
+        >
+          <view class="fund-card-left">
+            <view class="fund-card-name-row">
+              <text class="fund-card-name">{{item.name}}</text>
+              <view class="fund-status-badge {{item.status}}">{{item.statusLabel}}</view>
+            </view>
+            <text class="fund-card-fee">每人 ¥{{item.feeStr}}</text>
+            <text wx:if="{{item.description}}" class="fund-card-desc">{{item.description}}</text>
+          </view>
+          <text class="fund-card-arrow">›</text>
+        </view>
+      </view>
+    </block>
+  </block>
+
+  <!-- ══ 筛选标签（非专项 tab） ════════════════ -->
+  <scroll-view wx:if="{{activeTab !== 'fund'}}" class="chips-row" scroll-x>
+    <view
+      class="chip {{activeCategory === 'all' ? 'active' : ''}}"
+      bindtap="filterCategory" data-cat="all"
+    >全部类目</view>
+    <view class="chip {{activeCategory === 'gift' ? 'active' : ''}}"       bindtap="filterCategory" data-cat="gift">🎁 礼品</view>
+    <view class="chip {{activeCategory === 'decoration' ? 'active' : ''}}" bindtap="filterCategory" data-cat="decoration">🎨 布置</view>
+    <view class="chip {{activeCategory === 'event' ? 'active' : ''}}"      bindtap="filterCategory" data-cat="event">🎉 活动</view>
+    <view class="chip {{activeCategory === 'supplies' ? 'active' : ''}}"   bindtap="filterCategory" data-cat="supplies">📚 文具</view>
+    <view class="chip {{activeCategory === 'other' ? 'active' : ''}}"      bindtap="filterCategory" data-cat="other">⭐ 其他</view>
+  </scroll-view>
+
+  <!-- ══ 按月分组列表 ════════════════════════ -->
+  <block wx:if="{{activeTab !== 'fund'}}">
+    <view wx:if="{{loading}}" class="loading-wrap"><loading></loading></view>
+
+    <!-- 空状态 -->
+    <view wx:elif="{{groupedRecords.length === 0}}" class="empty-state">
+      <text style="font-size: 80rpx">📭</text>
+      <text>该分类暂无记录</text>
+    </view>
+
+    <block wx:else>
+      <block wx:for="{{groupedRecords}}" wx:key="month">
+      <view class="month-label">{{item.month}}</view>
+      <view class="record-card">
+        <view
+          class="record-item"
+          wx:for="{{item.records}}"
+          wx:for-item="rec"
+          wx:key="_id"
+          bindtap="viewRecord"
+          data-id="{{rec._id}}"
+          data-type="{{rec.recordType}}"
+        >
+          <view class="ri-icon-wrap {{rec.iconBg}}">
+            <text class="ri-icon">{{rec.icon}}</text>
+          </view>
+          <view class="ri-body">
+            <text class="ri-name">{{rec.displayName}}</text>
+            <view class="ri-meta">
+              <text class="ri-date">{{rec.displayDate}}</text>
+              <text wx:if="{{rec.categoryLabel}}" class="ri-cat">{{rec.categoryLabel}}</text>
+              <view wx:if="{{rec.receiptsCount > 0}}" class="receipt-dot">📎 {{rec.receiptsCount}}</view>
+            </view>
+          </view>
+          <text class="ri-amount {{rec.recordType}}">{{rec.amountStr}}</text>
+        </view>
+      </view>
+    </block>
+    </block>
+
+    <!-- ══ 支出分布图 ════════════════════════ -->
+    <view wx:if="{{activeTab !== 'income' && chartData.length > 0}}" class="chart-card">
+      <text class="section-title" style="display:block;margin-bottom:24rpx">支出分布</text>
+      <view class="chart-row" wx:for="{{chartData}}" wx:key="label">
+        <view class="chart-label-wrap">
+          <text class="chart-icon">{{item.icon}}</text>
+          <text class="chart-label">{{item.label}}</text>
+        </view>
+        <view class="chart-bar-wrap">
+          <view class="chart-bar" style="width: {{item.percent}}%; background: {{item.color}}"></view>
+        </view>
+        <text class="chart-pct">{{item.percent}}%</text>
+      </view>
+    </view>
+  </block>
+
+  <view style="height: 40rpx"></view>
+  <view class="safe-bottom"></view>
+</view>

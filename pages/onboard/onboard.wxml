@@ -1,0 +1,100 @@
+<!-- pages/onboard/onboard.wxml -->
+<view class="container">
+
+  <view class="hero">
+    <text class="hero-emoji">📒</text>
+    <text class="hero-title">班费账本</text>
+    <text class="hero-sub">{{className || '班费管理'}} · 收支透明公开</text>
+  </view>
+
+  <view class="form-card">
+    <text class="form-title">加入班级，完善信息</text>
+
+    <view class="avatar-row">
+      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image class="avatar-img" src="{{avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"/>
+        <view class="avatar-edit-tag">换头像</view>
+      </button>
+    </view>
+
+    <view class="field">
+      <text class="field-label">家长姓名 <text class="required-star">*</text></text>
+      <view class="field-input-wrap">
+        <input class="field-input" type="nickname" value="{{name}}" bindinput="onNameInput"/>
+        <text wx:if="{{!name}}" class="fake-placeholder">请输入姓名或点击使用微信昵称</text>
+      </view>
+    </view>
+
+    <!-- 花名册 picker 模式 -->
+    <view wx:if="{{!claimChair && rosterLoaded && !rosterEmpty}}" class="field">
+      <text class="field-label">选择孩子 <text class="required-star">*</text></text>
+      <picker range="{{rosterOptions}}" value="{{pickerIdx}}" bindchange="onPickerChange">
+        <view class="field-input picker-row">
+          <text class="{{childName ? 'picker-val' : 'picker-ph'}}">
+            {{childName ? (studentNo + '  ' + childName) : '请从花名册中选择'}}
+          </text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 降级：手动输入模式（花名册为空） -->
+    <view wx:elif="{{!claimChair && rosterLoaded && rosterEmpty}}">
+      <view class="field">
+        <text class="field-label">学号 <text class="required-star">*</text></text>
+        <input class="field-input" type="number" placeholder="如：1 或 01" value="{{childNoManual}}" bindinput="onChildNoManualInput"/>
+      </view>
+      <view class="field">
+        <text class="field-label">孩子姓名 <text class="required-star">*</text></text>
+        <input class="field-input" placeholder="请输入孩子姓名" value="{{childNameManual}}" bindinput="onChildNameManualInput"/>
+        <view wx:if="{{notFound}}" class="not-found-tip">
+          <text>⚠️ 未在花名册中找到「{{childNameManual}}」，请确认姓名或联系家委会</text>
+        </view>
+        <text class="hint" style="margin-top:8rpx">花名册导入后将自动核验身份</text>
+      </view>
+    </view>
+
+    <!-- 加载中 -->
+    <view wx:elif="{{!claimChair}}" class="field">
+      <text class="field-label">孩子姓名</text>
+      <view class="field-input picker-row">
+        <text class="picker-ph">花名册加载中...</text>
+      </view>
+    </view>
+
+    <!-- 家委主任入口 -->
+    <view class="chair-claim-row">
+      <checkbox-group bindchange="onClaimChairChange">
+        <label class="chair-claim-label">
+          <checkbox value="chair" checked="{{claimChair}}" color="#07C160"/>
+          <text class="chair-claim-text">我是家委发言人</text>
+        </label>
+      </checkbox-group>
+    </view>
+
+    <view wx:if="{{claimChair}}" class="field">
+      <text class="field-label">家委发言人设置码 <text class="required-star">*</text></text>
+      <input
+        class="field-input {{codeWrong ? 'input-error' : ''}}"
+        placeholder="请输入设置码"
+        password="{{true}}"
+        value="{{setupCode}}"
+        bindinput="onSetupCodeInput"
+      />
+      <view wx:if="{{codeWrong}}" class="not-found-tip" style="margin-top:12rpx">
+        <text>⚠️ 设置码不正确，请核对后重试</text>
+      </view>
+      <text class="hint" style="margin-top:8rpx">设置码由小程序部署方提供</text>
+    </view>
+
+    <text wx:if="{{!claimChair && rosterLoaded && !rosterEmpty}}" class="hint">
+      请从班级花名册中选择您的孩子
+    </text>
+
+    <button class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="submit" loading="{{submitting}}">
+      {{submitting ? '验证中...' : '进入账本 →'}}
+    </button>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>
